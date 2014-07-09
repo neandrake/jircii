@@ -1,166 +1,155 @@
 package text;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-import rero.config.*;
+import javax.swing.JComponent;
 
-public class LabelDisplay extends JComponent implements MouseListener
-{
-   protected int lines;
-   protected AttributedString[] left;
+public class LabelDisplay extends JComponent implements MouseListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected int lines;
+	protected AttributedString[] left;
 
-   protected AttributedString[] right;
-   protected int[]              right_widths; // store the widths of the rightmost strings
+	protected AttributedString[] right;
+	protected int[] right_widths; // store the widths of the rightmost strings
 
-   public void setNumberOfLines(int l)
-   {
-      lines = l;
-      left = new AttributedString[l];
-      right = new AttributedString[l];
-      right_widths = new int[l];
+	public void setNumberOfLines(int l) {
+		lines = l;
+		left = new AttributedString[l];
+		right = new AttributedString[l];
+		right_widths = new int[l];
 
-      revalidate();
-   }
+		revalidate();
+	}
 
-   public int getTotalLines()
-   {
-      return lines;
-   }
+	public int getTotalLines() {
+		return lines;
+	}
 
-   public Dimension getPreferredSize()
-   {
-      int potheight = (lines * TextSource.fontMetrics.getHeight()) + 2;
-     
-      return new Dimension(Integer.MAX_VALUE, potheight);
-   }
+	@Override
+	public Dimension getPreferredSize() {
+		int potheight = (lines * TextSource.fontMetrics.getHeight()) + 2;
 
-   public void setLine(String left_text, String right_text, int lineno)
-   {
-      lineno = left.length - (lineno + 1);
+		return new Dimension(Integer.MAX_VALUE, potheight);
+	}
 
-      left[lineno]         = AttributedString.CreateAttributedString(left_text);
-      right[lineno]        = AttributedString.CreateAttributedString(right_text);
- 
-      left[lineno].assignWidths();
-      right[lineno].assignWidths();
+	public void setLine(String left_text, String right_text, int lineno) {
+		lineno = left.length - (lineno + 1);
 
-      right_widths[lineno] = right[lineno].getAttributedText().getWidth();
-   }
+		left[lineno] = AttributedString.CreateAttributedString(left_text);
+		right[lineno] = AttributedString.CreateAttributedString(right_text);
 
-   public LabelDisplay()
-   {
-      setNumberOfLines(1);
-      addMouseListener(this);
-   }
+		left[lineno].assignWidths();
+		right[lineno].assignWidths();
 
-   public void paint (Graphics g)
-   {
-      TextSource.initGraphics(g);
+		right_widths[lineno] = right[lineno].getAttributedText().getWidth();
+	}
 
-      int checkY = (g.getClipBounds()).y - 9;             // reverse these if
-      int checkH = checkY+(g.getClipBounds()).height + 20; // painting fucks up
+	public LabelDisplay() {
+		setNumberOfLines(1);
+		addMouseListener(this);
+	}
 
-      int width = super.getWidth();
-      int height = super.getHeight();
+	@Override
+	public void paint(Graphics g) {
+		TextSource.initGraphics(g);
 
-      int baseline = height - TextSource.fontMetrics.getDescent() - 1; // gives us a 5 pixel buffer       was 5
-                                                                         // between the textbox and the textarea
+		int checkY = (g.getClipBounds()).y - 9; // reverse these if
+		int checkH = checkY + (g.getClipBounds()).height + 20; // painting fucks up
 
-      //g.drawLine(0, baseline, 1024, baseline);
+		int width = super.getWidth();
+		int height = super.getHeight();
 
+		int baseline = height - TextSource.fontMetrics.getDescent() - 1; // gives us a 5 pixel buffer was 5
+																			// between the textbox and the textarea
 
-      for (int x = 0; x < left.length && baseline > 0 && left[x] != null; x++)
-      {
-         if (baseline <= checkH && baseline >= checkY)
-         {
-            TextSource.drawText(g, left[x].getAttributedText(), 0, baseline);
-         }
+		// g.drawLine(0, baseline, 1024, baseline);
 
-         baseline -= (TextSource.fontMetrics.getHeight());
-      }
+		for (int x = 0; x < left.length && baseline > 0 && left[x] != null; x++) {
+			if (baseline <= checkH && baseline >= checkY) {
+				TextSource.drawText(g, left[x].getAttributedText(), 0, baseline);
+			}
 
-      baseline = height - TextSource.fontMetrics.getDescent() - 1; // gives us a 5 pixel buffer       was 5
-                                                                         // between the textbox and the textarea
-      for (int x = 0; x < right.length && baseline > 0 && right[x] != null; x++)
-      {
-         if (baseline <= checkH && baseline >= checkY)
-         {
-            TextSource.drawText(g, right[x].getAttributedText(), width - right_widths[x], baseline);
-         }
+			baseline -= (TextSource.fontMetrics.getHeight());
+		}
 
-         baseline -= (TextSource.fontMetrics.getHeight());
-      }
-   }
+		baseline = height - TextSource.fontMetrics.getDescent() - 1; // gives us a 5 pixel buffer was 5
+																		// between the textbox and the textarea
+		for (int x = 0; x < right.length && baseline > 0 && right[x] != null; x++) {
+			if (baseline <= checkH && baseline >= checkY) {
+				TextSource.drawText(g, right[x].getAttributedText(), width - right_widths[x], baseline);
+			}
 
-   public int translateToLineNumber(int pixely)
-   {
-      int baseline = getHeight() - TextSource.fontMetrics.getDescent() - 1; // gives us a 5 pixel buffer       was 5
-                                                                         // between the textbox and the textarea
+			baseline -= (TextSource.fontMetrics.getHeight());
+		}
+	}
 
-      for (int x = 0; x < left.length && baseline > 0 && left[x] != null; x++)
-      {
-         if (pixely >= (baseline - TextSource.fontMetrics.getHeight() - 0))
-         {
-            return x;
-         }
+	public int translateToLineNumber(int pixely) {
+		int baseline = getHeight() - TextSource.fontMetrics.getDescent() - 1; // gives us a 5 pixel buffer was 5
+																				// between the textbox and the textarea
 
-         baseline -= (TextSource.fontMetrics.getHeight() + 0);
-      }
+		for (int x = 0; x < left.length && baseline > 0 && left[x] != null; x++) {
+			if (pixely >= (baseline - TextSource.fontMetrics.getHeight() - 0)) {
+				return x;
+			}
 
-      return 0;
-   }
+			baseline -= (TextSource.fontMetrics.getHeight() + 0);
+		}
 
-   public void mousePressed(MouseEvent ev) { }
-   public void mouseEntered(MouseEvent ev) { }
-   public void mouseExited(MouseEvent ev) { }
-   public void mouseReleased(MouseEvent ev) { }
+		return 0;
+	}
 
-   public void mouseClicked(MouseEvent ev)
-   {
-      if (ev.isShiftDown())
-      {
-         int lineno = translateToLineNumber(ev.getY());
+	@Override
+	public void mousePressed(MouseEvent ev) {}
 
-         int width;
-         AttributedText iter;
+	@Override
+	public void mouseEntered(MouseEvent ev) {}
 
-         if (ev.getX() >= (getWidth() - right_widths[lineno]))
-         {
-            width = getWidth() - right_widths[lineno]; 
-            iter  = right[lineno].getAttributedText();  
-         }
-         else
-         {
-            width = 0;
-            iter  = left[lineno].getAttributedText();  
-         }
+	@Override
+	public void mouseExited(MouseEvent ev) {}
 
-         while (iter != null && (iter.width + width) < ev.getX())
-         {
-            width = width + iter.width;
-            iter = iter.next;
-         }
+	@Override
+	public void mouseReleased(MouseEvent ev) {}
 
-         if (iter != null)
-         {
-            int            index;
+	@Override
+	public void mouseClicked(MouseEvent ev) {
+		if (ev.isShiftDown()) {
+			int lineno = translateToLineNumber(ev.getY());
 
-            if (ev.isControlDown() && iter.backIndex > -1)
-            {
-               index = iter.backIndex;
-            }
-            else
-            {
-               index = iter.foreIndex;
-            }
+			int width;
+			AttributedText iter;
 
-            ModifyColorMapDialog.showModifyColorMapDialog(this, index);
-         }
-         return;
-      }
-   }
+			if (ev.getX() >= (getWidth() - right_widths[lineno])) {
+				width = getWidth() - right_widths[lineno];
+				iter = right[lineno].getAttributedText();
+			} else {
+				width = 0;
+				iter = left[lineno].getAttributedText();
+			}
 
-   
+			while (iter != null && (iter.width + width) < ev.getX()) {
+				width = width + iter.width;
+				iter = iter.next;
+			}
+
+			if (iter != null) {
+				int index;
+
+				if (ev.isControlDown() && iter.backIndex > -1) {
+					index = iter.backIndex;
+				} else {
+					index = iter.foreIndex;
+				}
+
+				ModifyColorMapDialog.showModifyColorMapDialog(this, index);
+			}
+			return;
+		}
+	}
+
 }

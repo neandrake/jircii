@@ -1,55 +1,43 @@
 package rero.dialogs;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.FlowLayout;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
+import rero.config.ClientDefaults;
+import rero.dck.DMain;
 
-import java.util.*;
-import rero.config.*;
+public class FontDialog extends DMain {
+	@Override
+	public String getTitle() {
+		return "Font Setup";
+	}
 
-import rero.dck.*;
-import rero.dck.items.*;
+	@Override
+	public String getDescription() {
+		return "Font Settings";
+	}
 
-public class FontDialog extends DMain
-{
-   public String getTitle()
-   {
-      return "Font Setup";
-   }
+	@Override
+	public void setupDialog() {
+		addBlankSpace();
+		addBlankSpace();
+		addBlankSpace();
+		addBlankSpace();
+		addBlankSpace();
 
-   public String getDescription()
-   {
-      return "Font Settings";
-   }
+		addLabelNormal("Client Font:", FlowLayout.LEFT);
+		addFontInput("ui.font", ClientDefaults.ui_font);
 
-   public void setupDialog()
-   {
-      addBlankSpace();
-      addBlankSpace();
-      addBlankSpace();
-      addBlankSpace();
-      addBlankSpace();
-    
-      addLabelNormal("Client Font:", FlowLayout.LEFT); 
-      addFontInput("ui.font", ClientDefaults.ui_font);
+		addBlankSpace();
 
-      addBlankSpace();
+		addCheckboxInput("ui.antialias", ClientDefaults.ui_antialias, "Enable text anti-aliasing", 'A', FlowLayout.CENTER);
 
-      addCheckboxInput("ui.antialias", ClientDefaults.ui_antialias,  "Enable text anti-aliasing", 'A', FlowLayout.CENTER);
+		addBlankSpace();
 
-      addBlankSpace();
+		addCharsetInput("client.encoding", "Use Charset:", 'c', 75);
 
-      addCharsetInput("client.encoding", "Use Charset:", 'c', 75); 
-
-      addBlankSpace();
-      addBlankSpace();
-      addBlankSpace();
-      addBlankSpace();
-   }
+		addBlankSpace();
+		addBlankSpace();
+		addBlankSpace();
+		addBlankSpace();
+	}
 }
-
-
-

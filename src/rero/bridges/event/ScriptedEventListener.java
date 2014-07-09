@@ -1,90 +1,72 @@
 package rero.bridges.event;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
-import rero.bridges.event.CodeSnippet;
 import rero.ircfw.interfaces.ChatListener; // mainly for the constants.
 
-public abstract class ScriptedEventListener
-{
-    protected boolean registered = false;  // an indicator of wether or not this listener has been setup.
+public abstract class ScriptedEventListener {
+	protected boolean registered = false; // an indicator of wether or not this listener has been setup.
 
-    protected List temporary = new LinkedList();
-    protected List permanent = new LinkedList();       
+	protected List temporary = new LinkedList();
+	protected List permanent = new LinkedList();
 
-    public int dispatchEvent(HashMap eventDescription)
-    {
-        int rv = easyDispatch(temporary, eventDescription);
+	public int dispatchEvent(HashMap eventDescription) {
+		int rv = easyDispatch(temporary, eventDescription);
 
-        if (rv == ChatListener.EVENT_DONE)
-        {
-            rv = easyDispatch(permanent, eventDescription);
-        }
- 
-        return rv;
-    }
+		if (rv == ChatListener.EVENT_DONE) {
+			rv = easyDispatch(permanent, eventDescription);
+		}
 
-    private int easyDispatch(List listeners, HashMap eventDescription)
-    {
-        CodeSnippet l;
+		return rv;
+	}
 
-        ListIterator iter = listeners.listIterator();
-        while (iter.hasNext())
-        {
-            l = (CodeSnippet)iter.next();
-   
-            if (l.isValid())            
-            {
-                if (listeners == temporary)
-                {
-                    iter.remove();
-                }
+	private int easyDispatch(List listeners, HashMap eventDescription) {
+		CodeSnippet l;
 
-                int rv = l.execute(eventDescription);
+		ListIterator iter = listeners.listIterator();
+		while (iter.hasNext()) {
+			l = (CodeSnippet) iter.next();
 
-                if ((rv & (ChatListener.REMOVE_LISTENER)) == ChatListener.REMOVE_LISTENER && listeners != temporary)
-                {
-                    iter.remove();
-                }
+			if (l.isValid()) {
+				if (listeners == temporary) {
+					iter.remove();
+				}
 
-                if ((rv & (ChatListener.EVENT_HALT)) == ChatListener.EVENT_HALT)
-                {
-                    return ChatListener.EVENT_HALT;
-                }
-            }
-            else
-            {
-                iter.remove(); // get rid of old events
-            }
-        }
-       
-        return ChatListener.EVENT_DONE;
-    }
+				int rv = l.execute(eventDescription);
 
-    public void addTemporaryListener(CodeSnippet c)
-    {
-        temporary.add(c);
-    }
+				if ((rv & (ChatListener.REMOVE_LISTENER)) == ChatListener.REMOVE_LISTENER && listeners != temporary) {
+					iter.remove();
+				}
 
-    public void addListener(CodeSnippet c)
-    {
-        permanent.add(c);
-    }
+				if ((rv & (ChatListener.EVENT_HALT)) == ChatListener.EVENT_HALT) {
+					return ChatListener.EVENT_HALT;
+				}
+			} else {
+				iter.remove(); // get rid of old events
+			}
+		}
 
-    public abstract void setupListener();
+		return ChatListener.EVENT_DONE;
+	}
 
-    public boolean isSetup()
-    {
-        return registered;
-    }
+	public void addTemporaryListener(CodeSnippet c) {
+		temporary.add(c);
+	}
 
-    public void setRegistered() 
-    {
-        registered = true;
-    }
+	public void addListener(CodeSnippet c) {
+		permanent.add(c);
+	}
+
+	public abstract void setupListener();
+
+	public boolean isSetup() {
+		return registered;
+	}
+
+	public void setRegistered() {
+		registered = true;
+	}
 }
-
-

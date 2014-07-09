@@ -1,32 +1,40 @@
 package rero.gui.toolkit;
 
-import java.util.*;
-import javax.swing.table.*;
+import java.util.HashMap;
 
-import java.awt.event.*;
+import javax.swing.table.AbstractTableModel;
 
-import text.*;
-
-import contrib.javapro.*;
+import contrib.javapro.SortTableModel;
 
 /** A model for the sortable list window thingy... */
-public abstract class GeneralListModel extends AbstractTableModel implements SortTableModel
-{
-   public boolean isSortable(int col)
-   {
-      return true;
-   }
+public abstract class GeneralListModel extends AbstractTableModel implements SortTableModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-   public abstract void sortColumn(int col, boolean ascending);
+	@Override
+	public boolean isSortable(int col) {
+		return true;
+	}
 
-   public abstract int getRowCount();
-   public abstract int getColumnCount();
+	@Override
+	public abstract void sortColumn(int col, boolean ascending);
 
-   public abstract String getColumnName(int col);
-   public abstract int getColumnWidth(int col);
+	@Override
+	public abstract int getRowCount();
 
-   public abstract HashMap getEventHashMap(int row);
+	@Override
+	public abstract int getColumnCount();
 
-   /** make sure this method always returns an AttributedString */
-   public abstract Object getValueAt(int row, int col);
+	@Override
+	public abstract String getColumnName(int col);
+
+	public abstract int getColumnWidth(int col);
+
+	public abstract HashMap getEventHashMap(int row);
+
+	/** make sure this method always returns an AttributedString */
+	@Override
+	public abstract Object getValueAt(int row, int col);
 }

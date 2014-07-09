@@ -1,66 +1,59 @@
 package rero.bridges.event;
 
-import sleep.runtime.*;
-import sleep.interfaces.*;
-import sleep.engine.*;
-
-import rero.script.*;
-
 import java.util.HashMap;
 
-public class CodeSnippet
-{
-   protected ScriptEnvironment environment;
-   protected ScriptInstance    si;
-   protected Block             code;
+import rero.script.LocalVariables;
+import sleep.engine.Block;
+import sleep.runtime.Scalar;
+import sleep.runtime.ScriptEnvironment;
+import sleep.runtime.ScriptInstance;
+import sleep.runtime.SleepUtils;
 
-   public CodeSnippet(Block c, ScriptEnvironment e)
-   {
-      code        = c;
-      environment = e;
+public class CodeSnippet {
+	protected ScriptEnvironment environment;
+	protected ScriptInstance si;
+	protected Block code;
 
-      si = environment.getScriptInstance();
-   }
+	public CodeSnippet(Block c, ScriptEnvironment e) {
+		code = c;
+		environment = e;
 
-   public int getLineNumber()
-   {
-      return code.getApproximateLineNumber();
-   }
+		si = environment.getScriptInstance();
+	}
 
-   public boolean isValid()
-   {
-      return si.isLoaded();
-   }
+	public int getLineNumber() {
+		return code.getApproximateLineNumber();
+	}
 
-   public int execute(HashMap eventData)
-   {
-      //
-      // if the script associated with this listener is no longer valid (i.e. loaded) then umm delete the listener
-      //
-      if (!isValid())
-      {
-         return rero.ircfw.interfaces.ChatListener.REMOVE_LISTENER;
-      }
+	public boolean isValid() {
+		return si.isLoaded();
+	}
 
-      Scalar rv;
+	public int execute(HashMap eventData) {
+		//
+		// if the script associated with this listener is no longer valid (i.e. loaded) then umm delete the listener
+		//
+		if (!isValid()) {
+			return rero.ircfw.interfaces.ChatListener.REMOVE_LISTENER;
+		}
 
-      synchronized (environment.getScriptVariables())
-      {
-         environment.getScriptVariables().pushLocalLevel();
+		Scalar rv;
 
-         LocalVariables locals = (LocalVariables)environment.getScriptVariables().getLocalVariables();
-         locals.setDataSource(eventData);
+		synchronized (environment.getScriptVariables()) {
+			environment.getScriptVariables().pushLocalLevel();
 
-         rv = SleepUtils.runCode(code, environment);
+			LocalVariables locals = (LocalVariables) environment.getScriptVariables().getLocalVariables();
+			locals.setDataSource(eventData);
 
-         environment.getScriptVariables().popLocalLevel();
-      }
+			rv = SleepUtils.runCode(code, environment);
 
-      if (rv == null) 
-      {
-         return 0;
-      }
+			environment.getScriptVariables().popLocalLevel();
+		}
 
-      return rv.getValue().intValue();
-   }
+		if (rv == null) {
+			return 0;
+		}
+
+		return rv.getValue().intValue();
+	}
 }

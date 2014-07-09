@@ -1,52 +1,46 @@
 package rero.ircfw;
 
+import java.util.HashMap;
+
+import rero.ircfw.data.FwDataHandler;
+import rero.ircfw.interfaces.FrameworkConstants;
 import rero.net.SocketEvent;
 import rero.net.interfaces.SocketDataListener;
 
-import rero.ircfw.data.FwDataHandler;
+public class ProtocolHandler implements SocketDataListener, FrameworkConstants {
+	Parsed1459 rawProtocolParser = new Parsed1459();
+	CTCPParser ctcpProtocolParser = new CTCPParser();
+	FwDataHandler frameworkData = new FwDataHandler();
+	ProtocolDispatcher dispatcher = new ProtocolDispatcher();
 
-import rero.ircfw.interfaces.FrameworkConstants;
+	@Override
+	public void socketDataRead(SocketEvent ev) {
+		handleProtocol(ev.message);
+	}
 
-import java.util.HashMap;
+	public InternalDataList getDataList() {
+		return frameworkData.getDataList();
+	}
 
-public class ProtocolHandler implements SocketDataListener, FrameworkConstants
-{
-   Parsed1459 rawProtocolParser  = new Parsed1459();    
-   CTCPParser ctcpProtocolParser = new CTCPParser();
-   FwDataHandler frameworkData   = new FwDataHandler();
-   ProtocolDispatcher dispatcher = new ProtocolDispatcher();
+	public ProtocolDispatcher getProtocolDispatcher() {
+		return dispatcher;
+	}
 
-   public void socketDataRead(SocketEvent ev)
-   {
-        handleProtocol(ev.message);
-   }
+	public void handleProtocol(String message) {
+		// pass to parsed1459
 
-   public InternalDataList getDataList()
-   {
-        return frameworkData.getDataList();
-   }
+		HashMap eventInfo = rawProtocolParser.parseString(message);
 
-   public ProtocolDispatcher getProtocolDispatcher()
-   {
-        return dispatcher;
-   } 
+		// alter event as needed
 
-   public void handleProtocol(String message)
-   {
-        // pass to parsed1459
-        
-        HashMap eventInfo = rawProtocolParser.parseString(message);
- 
-        // alter event as needed
-       
-        eventInfo = ctcpProtocolParser.parseEvent(eventInfo);
+		eventInfo = ctcpProtocolParser.parseEvent(eventInfo);
 
-        // pass to data structure handler
+		// pass to data structure handler
 
-        eventInfo = frameworkData.parseEvent(eventInfo);  
+		eventInfo = frameworkData.parseEvent(eventInfo);
 
-        // pass to event dispatcher 
+		// pass to event dispatcher
 
-        dispatcher.dispatchEvent(eventInfo);
-   }
+		dispatcher.dispatchEvent(eventInfo);
+	}
 }

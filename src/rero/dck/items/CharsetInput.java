@@ -1,102 +1,97 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.nio.charset.Charset;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
-import java.io.*;
-import java.nio.charset.*;
+import rero.config.ClientState;
+import rero.dck.SuperInput;
 
-import java.util.*;
+public class CharsetInput extends SuperInput {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-import rero.dck.*;
-import rero.config.*;
+	public static final String DEFAULT_CHARSET = "Platform Default";
 
-public class CharsetInput extends SuperInput
-{
-   public static final String DEFAULT_CHARSET = "Platform Default";
+	protected JComboBox name;
+	protected boolean listing = true;
+	protected JLabel label;
 
-   protected JComboBox  name;
-   protected boolean    listing = true;
-   protected JLabel     label;
+	public CharsetInput(String _variable, String aLabel, char mnemonic, int rightGap) {
+		variable = _variable;
 
-   public CharsetInput(String _variable, String aLabel, char mnemonic, int rightGap)
-   {
-      variable = _variable;
+		setLayout(new BorderLayout());
 
-      setLayout(new BorderLayout()); 
+		name = new JComboBox();
+		name.addItem("Loading Charsets...");
 
-      name  = new JComboBox();
-      name.addItem("Loading Charsets...");
+		add(name, BorderLayout.CENTER);
 
-      add(name, BorderLayout.CENTER);
+		if (rightGap > 0) {
+			JPanel temp = new JPanel();
+			temp.setPreferredSize(new Dimension(rightGap, 0));
 
-      if (rightGap > 0)
-      {
-         JPanel temp = new JPanel();
-         temp.setPreferredSize(new Dimension(rightGap, 0));
+			add(temp, BorderLayout.EAST);
+		}
 
-         add(temp, BorderLayout.EAST);
-      }
+		label = new JLabel("  " + aLabel + " ");
+		label.setDisplayedMnemonic(mnemonic);
 
-      label = new JLabel("  " + aLabel + " ");
-      label.setDisplayedMnemonic(mnemonic);
+		add(label, BorderLayout.WEST);
+	}
 
-      add(label, BorderLayout.WEST);
-   }
-  
-   public void setAlignWidth(int width)
-   {
-      label.setPreferredSize(new Dimension(width, 0));
-      revalidate();
-   }
+	@Override
+	public void setAlignWidth(int width) {
+		label.setPreferredSize(new Dimension(width, 0));
+		revalidate();
+	}
 
-   public void save()
-   {
-      ClientState.getClientState().setString(getVariable(), name.getSelectedItem().toString());
-   }
+	@Override
+	public void save() {
+		ClientState.getClientState().setString(getVariable(), name.getSelectedItem().toString());
+	}
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 
-   public int getEstimatedWidth()
-   {
-      return (int)label.getPreferredSize().getWidth();
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return (int) label.getPreferredSize().getWidth();
+	}
 
-   public void refresh()
-   {
-      if (!listing)
-      {
-         name.setSelectedItem(ClientState.getClientState().getString(getVariable(), DEFAULT_CHARSET));
-      }
-      else
-      {
-         SwingUtilities.invokeLater(new Runnable()
-         {
-             public void run()
-             {
-                name.addItem(DEFAULT_CHARSET);
+	@Override
+	public void refresh() {
+		if (!listing) {
+			name.setSelectedItem(ClientState.getClientState().getString(getVariable(), DEFAULT_CHARSET));
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					name.addItem(DEFAULT_CHARSET);
 
-                Iterator i = Charset.availableCharsets().keySet().iterator();
+					Iterator i = Charset.availableCharsets().keySet().iterator();
 
-                while (i.hasNext())
-                {
-                   name.addItem(i.next().toString());
-                }
+					while (i.hasNext()) {
+						name.addItem(i.next().toString());
+					}
 
-                name.removeItemAt(0);             
-                listing = false;
-                refresh();
-                revalidate();
-             } 
-         });
-      }
-   }
+					name.removeItemAt(0);
+					listing = false;
+					refresh();
+					revalidate();
+				}
+			});
+		}
+	}
 }
-
-

@@ -1,36 +1,30 @@
 package rero.gui.script;
 
-import rero.client.output.*;
-import java.util.*;
+import java.util.HashMap;
 
+import rero.bridges.event.ScriptedEventListener;
+import rero.gui.UICapabilities;
 import rero.ircfw.interfaces.ChatListener;
 
-import rero.gui.*;
+public class WindowDataListener extends ScriptedEventListener {
+	protected UICapabilities gui;
 
-import rero.bridges.event.*;
+	public WindowDataListener(UICapabilities _gui) {
+		gui = _gui;
+	}
 
-public class WindowDataListener extends ScriptedEventListener
-{
-   protected UICapabilities gui;
+	public boolean shouldContinue(String window, String text) {
+		HashMap eventData = new HashMap();
 
-   public WindowDataListener(UICapabilities _gui)
-   {
-      gui = _gui;
-   }
+		eventData.put("$parms", text);
+		eventData.put("$data", window + " " + text);
+		eventData.put("$window", window);
 
-   public boolean shouldContinue(String window, String text)
-   {
-      HashMap eventData = new HashMap();
+		return (dispatchEvent(eventData) != ChatListener.EVENT_HALT);
+	}
 
-      eventData.put("$parms",  text);
-      eventData.put("$data",   window + " " + text);
-      eventData.put("$window", window);
-
-      return (dispatchEvent(eventData) != ChatListener.EVENT_HALT);
-   }
-
-   public void setupListener()
-   {
-      gui.setListener(this);
-   }
+	@Override
+	public void setupListener() {
+		gui.setListener(this);
+	}
 }

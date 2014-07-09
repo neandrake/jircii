@@ -1,157 +1,143 @@
 package text.list;
 
-import text.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import java.util.*;
+import javax.swing.BoundedRangeModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-public abstract class ListData implements BoundedRangeModel
-{
-    protected ChangeEvent event;
-    protected LinkedList listeners;
+import text.TextSource;
 
-    protected int currentValue  = 0;
+public abstract class ListData implements BoundedRangeModel {
+	protected ChangeEvent event;
+	protected LinkedList listeners;
 
-    protected boolean adjusting = false;
+	protected int currentValue = 0;
 
-    protected int extent = 1;
+	protected boolean adjusting = false;
 
-    public ListData()
-    {
-       event = new ChangeEvent(this);
-       listeners = new LinkedList();
-    }
+	protected int extent = 1;
 
-    public ListElement getElementAtLocation(int pixely)
-    {
-       int _height = (TextSource.fontMetrics.getHeight() + 2);
+	public ListData() {
+		event = new ChangeEvent(this);
+		listeners = new LinkedList();
+	}
 
-       int lineNo = ((pixely - (pixely % _height)) / _height) + currentValue;       
+	public ListElement getElementAtLocation(int pixely) {
+		int _height = (TextSource.fontMetrics.getHeight() + 2);
 
-       return getElementAt(lineNo);
-    } 
+		int lineNo = ((pixely - (pixely % _height)) / _height) + currentValue;
 
-    public void dirty() { }
+		return getElementAt(lineNo);
+	}
 
-    public abstract int getSize();
+	public void dirty() {}
 
-    public abstract ListElement head();
-    public abstract ListElement next();
+	public abstract int getSize();
 
-    public abstract ListElement getElementAt(int number);
-    public abstract Iterator    dataIterator();
+	public abstract ListElement head();
 
-    public Object getSynchronizationKeyOuter()
-    {
-        return null;
-    }
+	public abstract ListElement next();
 
-    public Object getSynchronizationKeyInner()
-    {
-        return null;
-    }
+	public abstract ListElement getElementAt(int number);
 
-    public void fireChangeEvent()
-    {
-        ListIterator i = listeners.listIterator();
-        while (i.hasNext())
-        {
-           ChangeListener temp = (ChangeListener)i.next();
-           temp.stateChanged(event);
-        }
-    }
+	public abstract Iterator dataIterator();
 
-    public void addChangeListener(ChangeListener x)
-    {
-        listeners.add(x);
-    }
+	public Object getSynchronizationKeyOuter() {
+		return null;
+	}
 
-    public void removeChangeListener(ChangeListener x)
-    {
-        listeners.remove(x);
-    }
+	public Object getSynchronizationKeyInner() {
+		return null;
+	}
 
-    public int getExtent()
-    { 
-        return extent; 
-    }
+	public void fireChangeEvent() {
+		ListIterator i = listeners.listIterator();
+		while (i.hasNext()) {
+			ChangeListener temp = (ChangeListener) i.next();
+			temp.stateChanged(event);
+		}
+	}
 
-    public int getMaximum()
-    {
-        return getSize();
-    }
+	@Override
+	public void addChangeListener(ChangeListener x) {
+		listeners.add(x);
+	}
 
-    public int getMinimum()
-    {
-        return 0;
-    }
+	@Override
+	public void removeChangeListener(ChangeListener x) {
+		listeners.remove(x);
+	}
 
-    public int getValue()
-    {
-        if ( (currentValue + extent) > getSize() )
-        {
-           currentValue = getSize() - extent;
-        }
+	@Override
+	public int getExtent() {
+		return extent;
+	}
 
-        if (getSize() < extent)
-        {
-           currentValue = 0;
-        }
+	@Override
+	public int getMaximum() {
+		return getSize();
+	}
 
-        if (currentValue < getSize())
-        {
-           return currentValue;
-        } 
+	@Override
+	public int getMinimum() {
+		return 0;
+	}
 
-        currentValue = getSize() - 1; 
-        return currentValue;
-    }
+	@Override
+	public int getValue() {
+		if ((currentValue + extent) > getSize()) {
+			currentValue = getSize() - extent;
+		}
 
-    public boolean getValueIsAdjusting()
-    {
-        return adjusting;
-    }
+		if (getSize() < extent) {
+			currentValue = 0;
+		}
 
-    public void setExtent(int x)
-    {
-        extent = x;
-    }
+		if (currentValue < getSize()) {
+			return currentValue;
+		}
 
-    public void setMaximum(int x)
-    {
-    }
+		currentValue = getSize() - 1;
+		return currentValue;
+	}
 
-    public void setMinimum(int x)
-    {
-    }
+	@Override
+	public boolean getValueIsAdjusting() {
+		return adjusting;
+	}
 
-    public void setRangeProperties(int newValue, int extent, int min, int max, boolean adjusting)
-    {
-    }
+	@Override
+	public void setExtent(int x) {
+		extent = x;
+	}
 
-    public void setValue (int newValue)
-    {
-        if (newValue < 0)
-        {
-           currentValue = 0;
-        }
-        else if (newValue < getSize())
-        {
-           currentValue = newValue;
-        }
-        else
-        {
-           currentValue = getSize() - 1;
-        }
+	@Override
+	public void setMaximum(int x) {}
 
-        fireChangeEvent();
-    }
+	@Override
+	public void setMinimum(int x) {}
 
-    public void setValueIsAdjusting(boolean b)
-    {
-        adjusting = b;
-    }
+	@Override
+	public void setRangeProperties(int newValue, int extent, int min, int max, boolean adjusting) {}
+
+	@Override
+	public void setValue(int newValue) {
+		if (newValue < 0) {
+			currentValue = 0;
+		} else if (newValue < getSize()) {
+			currentValue = newValue;
+		} else {
+			currentValue = getSize() - 1;
+		}
+
+		fireChangeEvent();
+	}
+
+	@Override
+	public void setValueIsAdjusting(boolean b) {
+		adjusting = b;
+	}
 }
-
-

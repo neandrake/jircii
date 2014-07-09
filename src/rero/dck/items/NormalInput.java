@@ -1,61 +1,59 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.FlowLayout;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-import rero.dck.*;
+import rero.dck.DItem;
+import rero.dck.DParent;
 
-public class NormalInput extends JPanel implements DItem
-{
-   protected JLabel label;
+public class NormalInput extends JPanel implements DItem {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected JLabel label;
 
-   public NormalInput(String text, int align)
-   {
-      setLayout(new FlowLayout(align));
+	public NormalInput(String text, int align) {
+		setLayout(new FlowLayout(align));
 
-      label = new JLabel(text);
-      
-      add(label);
-   }
+		label = new JLabel(text);
 
-   public void setEnabled(boolean b)
-   {
-   }
+		add(label);
+	}
 
-   public void save()
-   {
+	@Override
+	public void setEnabled(boolean b) {}
 
-   }
+	@Override
+	public void save() {
 
-   public void refresh()
-   {
-   }
+	}
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+	@Override
+	public void refresh() {}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-   public void setParent(DParent parent)
-   {
-      
-   }
+	@Override
+	public void setAlignWidth(int width) {}
 
-   public void setText(String text)
-   {
-      label.setText(text);
-   }
+	@Override
+	public void setParent(DParent parent) {
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	}
+
+	public void setText(String text) {
+		label.setText(text);
+	}
+
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 }
-

@@ -1,20 +1,17 @@
 package rero.dialogs.toolkit;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JTextField;
 
-import java.awt.*;
-import java.awt.event.*;
+public class PlainLabel extends JTextField {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-import java.util.*;
-
-public class PlainLabel extends JTextField
-{ 
-   public PlainLabel(String text)
-   {
-      setBorder(null);
-      setEditable(false);
-      setOpaque(false);
-      setText(text); 
-   }
+	public PlainLabel(String text) {
+		setBorder(null);
+		setEditable(false);
+		setOpaque(false);
+		setText(text);
+	}
 }

@@ -1,23 +1,22 @@
 package rero.gui.toolbar;
 
-import rero.gui.*;
+import java.awt.event.MouseEvent;
 
-import java.awt.event.*;
+import rero.gui.SessionManager;
 
-public class DCCAction implements ToolAction
-{
-   public void actionPerformed(MouseEvent ev)
-   {
-      SessionManager.getGlobalCapabilities().showOptionDialog("DCC Options");
-   }
+public class DCCAction implements ToolAction {
+	@Override
+	public void actionPerformed(MouseEvent ev) {
+		SessionManager.getGlobalCapabilities().showOptionDialog("DCC Options");
+	}
 
-   public String getDescription()
-   {
-      return "DCC Options";
-   }
+	@Override
+	public String getDescription() {
+		return "DCC Options";
+	}
 
-   public int getIndex()
-   {
-      return 24;
-   }
+	@Override
+	public int getIndex() {
+		return 24;
+	}
 }

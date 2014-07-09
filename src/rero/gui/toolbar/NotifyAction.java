@@ -1,33 +1,25 @@
 package rero.gui.toolbar;
 
-import rero.gui.*;
+import java.awt.event.MouseEvent;
 
-import java.awt.event.*;
-import java.awt.*;
+import rero.client.Capabilities;
+import rero.gui.SessionManager;
 
-import javax.swing.*;
-import javax.swing.event.*;
+public class NotifyAction implements ToolAction {
+	@Override
+	public void actionPerformed(MouseEvent ev) {
+		Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
 
-import rero.client.*;
+		SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/NOTIFY");
+	}
 
-import rero.bridges.menu.*;
+	@Override
+	public String getDescription() {
+		return "Show notify list";
+	}
 
-public class NotifyAction implements ToolAction
-{
-   public void actionPerformed(MouseEvent ev)
-   {
-      Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
-
-      SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/NOTIFY");
-   }
-
-   public String getDescription()
-   {
-      return "Show notify list";
-   } 
-
-   public int getIndex()
-   {
-      return 27;
-   }
+	@Override
+	public int getIndex() {
+		return 27;
+	}
 }

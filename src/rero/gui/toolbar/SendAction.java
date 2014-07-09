@@ -1,36 +1,31 @@
 package rero.gui.toolbar;
 
-import rero.gui.*;
+import java.awt.event.MouseEvent;
 
-import java.awt.event.*;
-import java.awt.*;
+import javax.swing.JOptionPane;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import rero.client.Capabilities;
+import rero.gui.SessionManager;
 
-import rero.client.*;
+public class SendAction implements ToolAction {
+	@Override
+	public void actionPerformed(MouseEvent ev) {
+		Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
 
-import rero.bridges.menu.*;
+		String nick = JOptionPane.showInputDialog(SessionManager.getGlobalCapabilities().getFrame(), "Send a file to:", "DCC Send", JOptionPane.QUESTION_MESSAGE);
 
-public class SendAction implements ToolAction
-{
-   public void actionPerformed(MouseEvent ev)
-   {
-      Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
+		if (nick != null) {
+			SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/DCC send " + nick);
+		}
+	}
 
-      String nick = JOptionPane.showInputDialog(SessionManager.getGlobalCapabilities().getFrame(), "Send a file to:", "DCC Send", JOptionPane.QUESTION_MESSAGE);
+	@Override
+	public String getDescription() {
+		return "Send a file via DCC";
+	}
 
-      if (nick != null)
-        SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/DCC send " + nick);
-   }
-
-   public String getDescription()
-   {
-      return "Send a file via DCC";
-   } 
-
-   public int getIndex()
-   {
-      return 22;
-   }
+	@Override
+	public int getIndex() {
+		return 22;
+	}
 }

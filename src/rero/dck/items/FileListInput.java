@@ -1,188 +1,189 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
+import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-import rero.config.*;
-import rero.dck.*;
+import rero.config.ClientState;
+import rero.config.StringList;
+import rero.dck.SuperInput;
 
-import javax.swing.filechooser.*;
+public class FileListInput extends SuperInput implements ActionListener, ListSelectionListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected InputListModel model;
+	protected JList list;
+	protected StringList data;
+	protected JTextField fullPath;
 
-import java.util.*;
-import java.io.*;
+	protected JButton addme, remme;
 
-public class FileListInput extends SuperInput implements ActionListener, ListSelectionListener
-{
-   protected InputListModel  model;
-   protected JList           list;
-   protected StringList      data;
-   protected JTextField      fullPath;
+	protected String desc;
 
-   protected JButton         addme, remme;
+	protected JFileChooser chooser;
 
-   protected String          desc;
- 
-   protected JFileChooser   chooser;
+	public FileListInput(String variable, String _desc, String add, char mn1, String rem, char mn2, int width, int height) {
+		desc = _desc;
 
-   public FileListInput(String variable, String _desc, String add, char mn1, String rem, char mn2, int width, int height)
-   {
-      desc  = _desc;
+		setLayout(new BorderLayout());
 
-      setLayout(new BorderLayout());
-      
-      data  = ClientState.getClientState().getStringList(variable);
-      data.load();
+		data = ClientState.getClientState().getStringList(variable);
+		data.load();
 
-      model = new InputListModel();
-      list  = new JList(model);
+		model = new InputListModel();
+		list = new JList(model);
 
-      JPanel temp = new JPanel();
-      temp.setPreferredSize(new Dimension(width, height));
+		JPanel temp = new JPanel();
+		temp.setPreferredSize(new Dimension(width, height));
 
-      add(temp, BorderLayout.EAST);
+		add(temp, BorderLayout.EAST);
 
-      temp = new JPanel();
-      temp.setPreferredSize(new Dimension(width, height));
+		temp = new JPanel();
+		temp.setPreferredSize(new Dimension(width, height));
 
-      add(temp, BorderLayout.WEST);
+		add(temp, BorderLayout.WEST);
 
-      add(new JScrollPane(list), BorderLayout.CENTER);
-   
-      JPanel buttons = new JPanel();
-      buttons.setLayout(new FlowLayout(FlowLayout.CENTER));
+		add(new JScrollPane(list), BorderLayout.CENTER);
 
-      JLabel l_path = new JLabel("Selected:  ");
+		JPanel buttons = new JPanel();
+		buttons.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-      fullPath = new JTextField("no file selected");
-      fullPath.setBorder(null);
-      fullPath.setEditable(false);
-      fullPath.setOpaque(false);
+		JLabel l_path = new JLabel("Selected:  ");
 
-      JPanel pathDisplay = new JPanel();
-      pathDisplay.setLayout(new BorderLayout());
-      pathDisplay.add(l_path, BorderLayout.WEST);
-      pathDisplay.add(fullPath, BorderLayout.CENTER);
+		fullPath = new JTextField("no file selected");
+		fullPath.setBorder(null);
+		fullPath.setEditable(false);
+		fullPath.setOpaque(false);
 
-      pathDisplay.setBorder(BorderFactory.createEmptyBorder(0, width, 0, 0));
+		JPanel pathDisplay = new JPanel();
+		pathDisplay.setLayout(new BorderLayout());
+		pathDisplay.add(l_path, BorderLayout.WEST);
+		pathDisplay.add(fullPath, BorderLayout.CENTER);
 
-      addme = new JButton(add);
-      addme.setMnemonic(mn1);
-      addme.addActionListener(this);
-      buttons.add(addme);
+		pathDisplay.setBorder(BorderFactory.createEmptyBorder(0, width, 0, 0));
 
-      remme = new JButton(rem);
-      remme.setMnemonic(mn2);
-      remme.addActionListener(this);
-      buttons.add(remme);
+		addme = new JButton(add);
+		addme.setMnemonic(mn1);
+		addme.addActionListener(this);
+		buttons.add(addme);
 
-      JPanel evil = new JPanel();
-      evil.setLayout(new BorderLayout());
-      evil.add(pathDisplay, BorderLayout.NORTH);
-      evil.add(buttons, BorderLayout.SOUTH);
-  
-      list.addListSelectionListener(this);
+		remme = new JButton(rem);
+		remme.setMnemonic(mn2);
+		remme.addActionListener(this);
+		buttons.add(remme);
 
-      add(evil, BorderLayout.SOUTH);
+		JPanel evil = new JPanel();
+		evil.setLayout(new BorderLayout());
+		evil.add(pathDisplay, BorderLayout.NORTH);
+		evil.add(buttons, BorderLayout.SOUTH);
 
-      setMinimumSize(new Dimension(width, height));
-   }
+		list.addListSelectionListener(this);
 
-   public void save()
-   {
-      data.save();
-   }
+		add(evil, BorderLayout.SOUTH);
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+		setMinimumSize(new Dimension(width, height));
+	}
 
-   public void valueChanged(ListSelectionEvent ev)
-   {
-      if (!ev.getValueIsAdjusting())
-      {
-         setSelectedCaption();
-      }
-   }
+	@Override
+	public void save() {
+		data.save();
+	}
 
-   public void setSelectedCaption()
-   {
-      if (list.getSelectedIndex() > -1 && list.getSelectedIndex() < list.getModel().getSize())
-      {
-         fullPath.setText(data.getList().get(list.getSelectedIndex()).toString());
-      }     
-      else
-      {
-         fullPath.setText("no file selected");
-      }
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public void valueChanged(ListSelectionEvent ev) {
+		if (!ev.getValueIsAdjusting()) {
+			setSelectedCaption();
+		}
+	}
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	public void setSelectedCaption() {
+		if (list.getSelectedIndex() > -1 && list.getSelectedIndex() < list.getModel().getSize()) {
+			fullPath.setText(data.getList().get(list.getSelectedIndex()).toString());
+		} else {
+			fullPath.setText("no file selected");
+		}
+	}
 
-   public void refresh()
-   {
-      data.load();
-      model.fireChange();
-   }
+	@Override
+	public void setAlignWidth(int width) {}
 
-   public void actionPerformed(ActionEvent ev)
-   {
-      if (ev.getSource() == remme)
-      {
-          if (list.getSelectedIndex() >= 0)
-          {
-             data.getList().remove(list.getSelectedIndex());
-             model.fireChange();
-          }
-      }
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 
-      if (ev.getSource() == addme)
-      {
-          if (chooser == null)
-          {
-             chooser = new JFileChooser();
-             chooser.setApproveButtonText(desc);
-          }
+	@Override
+	public void refresh() {
+		data.load();
+		model.fireChange();
+	}
 
-          if (chooser.showDialog(this, null) == JFileChooser.APPROVE_OPTION)
-          {
-             data.getList().add(chooser.getSelectedFile().getAbsolutePath());
-             model.fireChange();
-          }
-      }
+	@Override
+	public void actionPerformed(ActionEvent ev) {
+		if (ev.getSource() == remme) {
+			if (list.getSelectedIndex() >= 0) {
+				data.getList().remove(list.getSelectedIndex());
+				model.fireChange();
+			}
+		}
 
-      setSelectedCaption();
-      notifyParent();
-   }
+		if (ev.getSource() == addme) {
+			if (chooser == null) {
+				chooser = new JFileChooser();
+				chooser.setApproveButtonText(desc);
+			}
 
-   protected class InputListModel extends AbstractListModel
-   {
-      public void fireChange()
-      {
-         model.fireContentsChanged(model, 0, model.getSize());
-      }
+			if (chooser.showDialog(this, null) == JFileChooser.APPROVE_OPTION) {
+				data.getList().add(chooser.getSelectedFile().getAbsolutePath());
+				model.fireChange();
+			}
+		}
 
-      public Object getElementAt(int index)
-      {
-         return new File((String)data.getList().get(index)).getName();
-      }
+		setSelectedCaption();
+		notifyParent();
+	}
 
-      public int getSize()
-      {
-         return data.getList().size();
-      }
-   }
+	protected class InputListModel extends AbstractListModel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public void fireChange() {
+			model.fireContentsChanged(model, 0, model.getSize());
+		}
+
+		@Override
+		public Object getElementAt(int index) {
+			return new File((String) data.getList().get(index)).getName();
+		}
+
+		@Override
+		public int getSize() {
+			return data.getList().size();
+		}
+	}
 }
-
-

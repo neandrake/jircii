@@ -1,106 +1,109 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import rero.config.*;
-import rero.dck.*;
+import rero.config.ClientState;
+import rero.dck.SuperInput;
 
-public class FloatInput extends SuperInput implements ChangeListener
-{
-   protected JLabel     label;
-   protected JTextField text;
-   protected JSlider    slider;
+public class FloatInput extends SuperInput implements ChangeListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected JLabel label;
+	protected JTextField text;
+	protected JSlider slider;
 
-   protected float  value;
+	protected float value;
 
-   public FloatInput(String var, float _value, String _label)
-   {
-      variable = var;
-      value = _value;
+	public FloatInput(String var, float _value, String _label) {
+		variable = var;
+		value = _value;
 
-      setLayout(new BorderLayout(5, 5));
+		setLayout(new BorderLayout(5, 5));
 
-      label = new JLabel(_label);
-       
-      add(label, BorderLayout.WEST);
+		label = new JLabel(_label);
 
-      int defValue = (int)(_value * 100);
+		add(label, BorderLayout.WEST);
 
-      slider = new JSlider(JSlider.HORIZONTAL, 0, 100, defValue);
-      slider.setMajorTickSpacing(25);
-      slider.setMinorTickSpacing(5);
-      slider.setPaintTicks(true);
-      slider.setPaintLabels(false);
+		int defValue = (int) (_value * 100);
 
-      slider.addChangeListener(this);
+		slider = new JSlider(SwingConstants.HORIZONTAL, 0, 100, defValue);
+		slider.setMajorTickSpacing(25);
+		slider.setMinorTickSpacing(5);
+		slider.setPaintTicks(true);
+		slider.setPaintLabels(false);
 
-      add(slider, BorderLayout.CENTER);
-       
-      text = new JTextField();
-      text.setEditable(false);
-      text.setColumns(4);
+		slider.addChangeListener(this);
 
-      refresh();
+		add(slider, BorderLayout.CENTER);
 
-      JPanel temp = new JPanel();
-      temp.setLayout(new FlowLayout(FlowLayout.CENTER));
+		text = new JTextField();
+		text.setEditable(false);
+		text.setColumns(4);
 
-      temp.add(text);
+		refresh();
 
-      add(temp, BorderLayout.EAST);
-   }
+		JPanel temp = new JPanel();
+		temp.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-   public void stateChanged(ChangeEvent ev)
-   {
-      if (slider.getValue() == 0)
-      {
-         text.setText("off");
-      }
-      else
-      {
-         text.setText(slider.getValue()+"%");    
-      }
-      notifyParent();
-   }
+		temp.add(text);
 
-   public void save()
-   {
-      ClientState.getClientState().setFloat(getVariable(), (float)slider.getValue() / 100f);
-   }
+		add(temp, BorderLayout.EAST);
+	}
 
-   public int getEstimatedWidth()
-   {
-      return (int)label.getPreferredSize().getWidth();
-   }
+	@Override
+	public void stateChanged(ChangeEvent ev) {
+		if (slider.getValue() == 0) {
+			text.setText("off");
+		} else {
+			text.setText(slider.getValue() + "%");
+		}
+		notifyParent();
+	}
 
-   public void setAlignWidth(int width)
-   {
-      label.setPreferredSize(new Dimension(width, 0));
-      revalidate();
-   }
+	@Override
+	public void save() {
+		ClientState.getClientState().setFloat(getVariable(), slider.getValue() / 100f);
+	}
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return (int) label.getPreferredSize().getWidth();
+	}
 
-   public void refresh()
-   {
-      int defValue = (int)(ClientState.getClientState().getFloat(getVariable(), value) * 100);
-      slider.setValue(defValue);
+	@Override
+	public void setAlignWidth(int width) {
+		label.setPreferredSize(new Dimension(width, 0));
+		revalidate();
+	}
 
-      if (defValue == 0)
-      {
-         text.setText("off");
-         return;
-      }
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 
-      text.setText(defValue + "%");
-   }
+	@Override
+	public void refresh() {
+		int defValue = (int) (ClientState.getClientState().getFloat(getVariable(), value) * 100);
+		slider.setValue(defValue);
+
+		if (defValue == 0) {
+			text.setText("off");
+			return;
+		}
+
+		text.setText(defValue + "%");
+	}
 }
-
-

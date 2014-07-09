@@ -32,233 +32,205 @@
 
 <trailing> ::= a bunch of white space
 
-**/
+ **/
 
 package rero.ircfw;
 
-import rero.ircfw.interfaces.FrameworkConstants;
-
-import java.util.regex.Pattern;
 import java.util.HashMap;
+import java.util.regex.Pattern;
+
+import rero.ircfw.interfaces.FrameworkConstants;
 import rero.util.StringParser;
 
-public class Parsed1459 implements FrameworkConstants
-{
-   //
-   // Yes, we are in write-only land with reg ex's.  Sorry.
-   //  Nick Pattern: ([\-|\[|\]|\\|\`|\^|\{|\}|\w]++)
-   //  Nick Pattern: ([^!\.]+?) <-- safer
-   //  User Pattern: ([\~\w]++)
-   //  User Pattern: ([^\@]+?)  <-- safer
-   //  Host Pattern: (\w++[[\.|\:]\w++]*)  hopefully works with either ipv4 or ipv6 addresses. - if my IP6 bit is bad then this 
-   //                                      will fuck up parsing royally and the client *WILL* crash.
-   //  Chan Pattern: ([\#|\&]\S++)
-   //
-   protected static String nickPattern    = "(.+?)";
-   protected static String userPattern    = "(.+?)";
-   protected static String hostPattern2   = "(.+?)";
+public class Parsed1459 implements FrameworkConstants {
+	//
+	// Yes, we are in write-only land with reg ex's. Sorry.
+	// Nick Pattern: ([\-|\[|\]|\\|\`|\^|\{|\}|\w]++)
+	// Nick Pattern: ([^!\.]+?) <-- safer
+	// User Pattern: ([\~\w]++)
+	// User Pattern: ([^\@]+?) <-- safer
+	// Host Pattern: (\w++[[\.|\:]\w++]*) hopefully works with either ipv4 or ipv6 addresses. - if my IP6 bit is bad then
+	// this
+	// will fuck up parsing royally and the client *WILL* crash.
+	// Chan Pattern: ([\#|\&]\S++)
+	//
+	protected static String nickPattern = "(.+?)";
+	protected static String userPattern = "(.+?)";
+	protected static String hostPattern2 = "(.+?)";
 
-   protected static String hostPattern    = "([\\w\\-\\=]++[[\\.|\\:][\\w\\-\\=]++]*)";
-   //protected static String channelPattern = "([\\#|\\&|\\!|\\+]\\S++)";
+	protected static String hostPattern = "([\\w\\-\\=]++[[\\.|\\:][\\w\\-\\=]++]*)";
+	// protected static String channelPattern = "([\\#|\\&|\\!|\\+]\\S++)";
 
-   // ([\-|\[|\]|\\|\`|\^|\{|\}|\w|\-]++)!(([\~\w\-]++)@([\w\-]++[\.[\w\-]++]*))
+	// ([\-|\[|\]|\\|\`|\^|\{|\}|\w|\-]++)!(([\~\w\-]++)@([\w\-]++[\.[\w\-]++]*))
 
-   protected static Pattern isHost         = Pattern.compile(hostPattern);
-   protected static Pattern isNickUserHost = Pattern.compile(nickPattern+"!("+userPattern+"@"+hostPattern2+")"); // matches nick!user@host 
-   protected static Pattern isNick         = Pattern.compile(nickPattern);
+	protected static Pattern isHost = Pattern.compile(hostPattern);
+	protected static Pattern isNickUserHost = Pattern.compile(nickPattern + "!(" + userPattern + "@" + hostPattern2 + ")"); // matches
+																															// nick!user@host
+	protected static Pattern isNick = Pattern.compile(nickPattern);
 
-   protected static Pattern isNumeric      = Pattern.compile("\\d++");
-   protected static Pattern isColonPresent = Pattern.compile(":(.++)");
-   protected static Pattern isWhiteSpace   = Pattern.compile("XXX");
+	protected static Pattern isNumeric = Pattern.compile("\\d++");
+	protected static Pattern isColonPresent = Pattern.compile(":(.++)");
+	protected static Pattern isWhiteSpace = Pattern.compile("XXX");
 
-   protected HashMap eventInformation;
+	protected HashMap eventInformation;
 
-   public HashMap parseString (String data)
-   {
-      eventInformation = new HashMap();
-      
-      eventInformation.put($RAW$, data);
+	public HashMap parseString(String data) {
+		eventInformation = new HashMap();
 
-      phase1(data, eventInformation);
+		eventInformation.put($RAW$, data);
 
-      return eventInformation;
-   }
+		phase1(data, eventInformation);
 
-   //
-   // Phase 1 - grabs really basic info (source, command, parms)
-   // -------
-   //
-   private HashMap phase1 (String data, HashMap eventInformation)
-   {
-       StringParser parser;
+		return eventInformation;
+	}
 
-       parser = new StringParser(data, isColonPresent);
-       if (parser.matches())
-       {
-           // <message> ::= ':' <prefix> <SPACE> <command> <params> 
+	//
+	// Phase 1 - grabs really basic info (source, command, parms)
+	// -------
+	//
+	private HashMap phase1(String data, HashMap eventInformation) {
+		StringParser parser;
 
-           String[] text = parser.getParsedString(0).split("\\s", 2);
+		parser = new StringParser(data, isColonPresent);
+		if (parser.matches()) {
+			// <message> ::= ':' <prefix> <SPACE> <command> <params>
 
-           parseSourceInformation(text[0], eventInformation);
+			String[] text = parser.getParsedString(0).split("\\s", 2);
 
-           data = text[1];
-       }
+			parseSourceInformation(text[0], eventInformation);
 
-       // <message> ::= <command> <params>
-       String text[] = data.split("\\s", 2);
+			data = text[1];
+		}
 
-       if (isNumeric.matcher(text[0]).matches())
-       {
-           eventInformation.put($NUMERIC$, text[0]);
-       }
+		// <message> ::= <command> <params>
+		String text[] = data.split("\\s", 2);
 
-       eventInformation.put($EVENT$, text[0]);
+		if (isNumeric.matcher(text[0]).matches()) {
+			eventInformation.put($NUMERIC$, text[0]);
+		}
 
-       if (text.length > 1)
-       {
-          data = text[1];
-       }
-       else
-       {
-          data = "";
-       }
+		eventInformation.put($EVENT$, text[0]);
 
-       parseParameterInformation(data, eventInformation);
+		if (text.length > 1) {
+			data = text[1];
+		} else {
+			data = "";
+		}
 
-       return eventInformation;
-   }
+		parseParameterInformation(data, eventInformation);
 
-   private HashMap parseParameterInformation (String data, HashMap eventInformation)
-   {
-       // <params> ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
+		return eventInformation;
+	}
 
-       //
-       // Generally the item after the COMMAND is a target or a set of parameters
-       // right here we are looking to see if it is the target or not.
-       //
-       StringParser parser = new StringParser(data, isColonPresent);
-       String text[] = data.split("\\s", 2);
-       int targetLength = 0;       
+	private HashMap parseParameterInformation(String data, HashMap eventInformation) {
+		// <params> ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
 
-       if (!parser.matches())
-       {
-           text = data.split("\\s", 2);
-           eventInformation.put($TARGET$, text[0]);
-           targetLength = text[0].length() + 1;
-       }
-       else
-       {
-	   // TODO: Use the isChannel() function in the InternalDataList for this.. I'm not sure how to access it.
-           if ( "#&+!".indexOf(data.charAt(1)) > -1 && data.indexOf(' ') == -1 )
-           {
-               // the parameter is a channel, this is put in place for broke assed ircds
-               // that don't know any better... grr.
-               data = data.substring(1, data.length());
+		//
+		// Generally the item after the COMMAND is a target or a set of parameters
+		// right here we are looking to see if it is the target or not.
+		//
+		StringParser parser = new StringParser(data, isColonPresent);
+		String text[] = data.split("\\s", 2);
+		int targetLength = 0;
 
-               return parseParameterInformation(data, eventInformation);
-           }
-           else
-           {           
-               data = "<null> " + data;
-               targetLength = "<null>".length() + 1;
-           }
+		if (!parser.matches()) {
+			text = data.split("\\s", 2);
+			eventInformation.put($TARGET$, text[0]);
+			targetLength = text[0].length() + 1;
+		} else {
+			// TODO: Use the isChannel() function in the InternalDataList for this.. I'm not sure how to access it.
+			if ("#&+!".indexOf(data.charAt(1)) > -1 && data.indexOf(' ') == -1) {
+				// the parameter is a channel, this is put in place for broke assed ircds
+				// that don't know any better... grr.
+				data = data.substring(1, data.length());
 
-           text = data.split("\\s", 2);
-           parser = new StringParser(data, isColonPresent);
-       }
+				return parseParameterInformation(data, eventInformation);
+			} else {
+				data = "<null> " + data;
+				targetLength = "<null>".length() + 1;
+			}
 
-       StringBuffer parmsString = new StringBuffer();
-       
-       while (!parser.matches() && text.length > 1)
-       {
-           text = data.split("\\s", 2);
+			text = data.split("\\s", 2);
+			parser = new StringParser(data, isColonPresent);
+		}
 
-           if (text.length > 1)
-           {
-              data = text[1];
+		StringBuffer parmsString = new StringBuffer();
 
-              parmsString.append(text[0]);
-              parmsString.append(" ");
+		while (!parser.matches() && text.length > 1) {
+			text = data.split("\\s", 2);
 
-              parser = new StringParser(data, isColonPresent);
-           }
-       }
+			if (text.length > 1) {
+				data = text[1];
 
-       if (parser.matches())
-       {
-           parmsString.append(parser.getParsedString(0));
-       }
-       else if (!data.equals(":"))
-       {
-           parmsString.append(data);
-       }
+				parmsString.append(text[0]);
+				parmsString.append(" ");
 
-       eventInformation.put($DATA$, parmsString.toString());
+				parser = new StringParser(data, isColonPresent);
+			}
+		}
 
-       if (targetLength < parmsString.toString().length())
-       {
-          eventInformation.put($PARMS$, parmsString.toString().substring(targetLength, parmsString.toString().length()  ));
-       }
-       else
-       {
-          /* fix a bug with NICK event if necessary */
-          if ("NICK".equals((String)eventInformation.get($EVENT$)))
-          {
-             eventInformation.put($DATA$, "<null> " + parmsString.toString());
-             eventInformation.put($PARMS$, parmsString.toString());
-          }
-          else
-          {
-             eventInformation.put($PARMS$, "");
-          }
-       }  
+		if (parser.matches()) {
+			parmsString.append(parser.getParsedString(0));
+		} else if (!data.equals(":")) {
+			parmsString.append(data);
+		}
 
-       return eventInformation;
-   }
+		eventInformation.put($DATA$, parmsString.toString());
 
-   private HashMap parseSourceInformation(String text, HashMap eventInformation)
-   {
-      StringParser parser = new StringParser(text, isNickUserHost);
-      if (parser.matches())
-      {
-          // Pattern> ([\-|\[|\]|\\|\`|\^|\{|\}|\w|\-]++)!(([\~\w\-]++)@([\w\-]++[\.[\w\-]++]*))
-          // Text> `butane!~uncle@istheman.chartermi.net
-          // Matches!
-          // 0: `butane
-          // 1: ~uncle@istheman.chartermi.net
-          // 2: ~uncle
-          // 3: istheman.chartermi.net
+		if (targetLength < parmsString.toString().length()) {
+			eventInformation.put($PARMS$, parmsString.toString().substring(targetLength, parmsString.toString().length()));
+		} else {
+			/* fix a bug with NICK event if necessary */
+			if ("NICK".equals(eventInformation.get($EVENT$))) {
+				eventInformation.put($DATA$, "<null> " + parmsString.toString());
+				eventInformation.put($PARMS$, parmsString.toString());
+			} else {
+				eventInformation.put($PARMS$, "");
+			}
+		}
 
-          String[] data = parser.getParsedStrings();
-          eventInformation.put($NICK$,    data[0]);
-          eventInformation.put($ADDRESS$, data[1]);
-          eventInformation.put($USER$,    data[2]);
-          eventInformation.put($HOST$,    data[3]);
+		return eventInformation;
+	}
 
-          eventInformation.put($SOURCE$,  data[0]);
+	private HashMap parseSourceInformation(String text, HashMap eventInformation) {
+		StringParser parser = new StringParser(text, isNickUserHost);
+		if (parser.matches()) {
+			// Pattern> ([\-|\[|\]|\\|\`|\^|\{|\}|\w|\-]++)!(([\~\w\-]++)@([\w\-]++[\.[\w\-]++]*))
+			// Text> `butane!~uncle@istheman.chartermi.net
+			// Matches!
+			// 0: `butane
+			// 1: ~uncle@istheman.chartermi.net
+			// 2: ~uncle
+			// 3: istheman.chartermi.net
 
-          return eventInformation;
-      }
-  
-      parser = new StringParser(text, isHost);
-      if (parser.matches())
-      {
-          String[] data = parser.getParsedStrings();
-          eventInformation.put($SERVER$,  data[0]);
-          eventInformation.put($NICK$,    data[0]);
-          eventInformation.put($SOURCE$,  data[0]);
+			String[] data = parser.getParsedStrings();
+			eventInformation.put($NICK$, data[0]);
+			eventInformation.put($ADDRESS$, data[1]);
+			eventInformation.put($USER$, data[2]);
+			eventInformation.put($HOST$, data[3]);
 
-          return eventInformation;
-      }
+			eventInformation.put($SOURCE$, data[0]);
 
-      parser = new StringParser(text, isNick);
-      if (parser.matches())
-      {
-          String[] data = parser.getParsedStrings();
-          eventInformation.put($NICK$,    data[0]);
-          eventInformation.put($SOURCE$,  data[0]);
-      }
+			return eventInformation;
+		}
 
-      return eventInformation;
-   }
+		parser = new StringParser(text, isHost);
+		if (parser.matches()) {
+			String[] data = parser.getParsedStrings();
+			eventInformation.put($SERVER$, data[0]);
+			eventInformation.put($NICK$, data[0]);
+			eventInformation.put($SOURCE$, data[0]);
+
+			return eventInformation;
+		}
+
+		parser = new StringParser(text, isNick);
+		if (parser.matches()) {
+			String[] data = parser.getParsedStrings();
+			eventInformation.put($NICK$, data[0]);
+			eventInformation.put($SOURCE$, data[0]);
+		}
+
+		return eventInformation;
+	}
 }

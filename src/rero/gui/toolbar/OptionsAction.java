@@ -1,23 +1,22 @@
 package rero.gui.toolbar;
 
-import rero.gui.*;
+import java.awt.event.MouseEvent;
 
-import java.awt.event.*;
+import rero.gui.SessionManager;
 
-public class OptionsAction implements ToolAction
-{
-   public void actionPerformed(MouseEvent ev)
-   {
-      SessionManager.getGlobalCapabilities().showOptionDialog("");
-   }
+public class OptionsAction implements ToolAction {
+	@Override
+	public void actionPerformed(MouseEvent ev) {
+		SessionManager.getGlobalCapabilities().showOptionDialog("");
+	}
 
-   public String getDescription()
-   {
-      return "View and edit options";
-   }
+	@Override
+	public String getDescription() {
+		return "View and edit options";
+	}
 
-   public int getIndex()
-   {
-      return 4;
-   }
+	@Override
+	public int getIndex() {
+		return 4;
+	}
 }

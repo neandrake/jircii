@@ -1,154 +1,142 @@
 package rero.script;
 
-import sleep.runtime.*;
-import sleep.engine.*;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Stack;
+import java.util.WeakHashMap;
 
-import sleep.error.*;
-import sleep.parser.*;
-
-import sleep.interfaces.*;
-
-import java.util.*;
-
-import rero.ircfw.*;
-import rero.bridges.*;
-
+import rero.bridges.BridgeKeeper;
 import rero.client.DataStructures;
+import rero.config.ClientState;
+import rero.ircfw.ChatFramework;
+import sleep.engine.Block;
+import sleep.interfaces.Loadable;
+import sleep.parser.CodeGenerator;
+import sleep.runtime.Scalar;
+import sleep.runtime.ScriptInstance;
+import sleep.runtime.ScriptLoader;
+import sleep.runtime.ScriptVariables;
+import sleep.runtime.SleepUtils;
+import text.AttributedString; // for the burco constants
 
-import rero.config.*;
-import text.*; // for the burco constants
+public class ScriptCore implements Loadable {
+	protected ScriptLoader scriptLoader; /* script loader baby! */
+	protected Hashtable environment; /* shared script environment */
+	protected ScriptVariables variables; /* variables shared amongst loaded scripts */
+	protected GlobalVariables globalData; /* global variable data */
 
-import java.io.*;
+	protected BridgeKeeper bridges; /* all of our nifty bridges ... */
 
-public class ScriptCore implements Loadable
-{
-   protected ScriptLoader    scriptLoader;  /* script loader baby! */
-   protected Hashtable       environment;   /* shared script environment */
-   protected ScriptVariables variables;     /* variables shared amongst loaded scripts */
-   protected GlobalVariables globalData;    /* global variable data */
+	protected static Scalar GLOBAL_HASH; /* a global hash for all... :) */
 
-   protected BridgeKeeper    bridges;       /* all of our nifty bridges ... */
+	public ScriptCore() {
+		if (GLOBAL_HASH == null) {
+			GLOBAL_HASH = SleepUtils.getHashScalar();
+		}
 
-   protected static Scalar   GLOBAL_HASH;   /* a global hash for all... :) */
+		scriptLoader = new ScriptLoader();
+		environment = new Hashtable();
+		globalData = new GlobalVariables();
+		globalData.putScalar("%GLOBAL", GLOBAL_HASH);
 
-   public ScriptCore()
-   {
-      if (GLOBAL_HASH == null)
-      {
-         GLOBAL_HASH = SleepUtils.getHashScalar();
-      }
+		variables = new ScriptVariables(globalData);
 
-      scriptLoader  = new ScriptLoader();
-      environment   = new Hashtable();
-      globalData    = new GlobalVariables();
-      globalData.putScalar("%GLOBAL", GLOBAL_HASH);
+		bridges = new BridgeKeeper();
 
-      variables     = new ScriptVariables(globalData);
+		scriptLoader.setCharsetConversion(false); // tell sleep to NOT convert characters inside of a script file
+		scriptLoader.setGlobalCache(true); // tell sleep to globally cache all script blocks... makes loading/reloading
+											// quicker for multiple servers + it saves memory :)
+		scriptLoader.addSpecificBridge(this);
 
-      bridges       = new BridgeKeeper();
+		CodeGenerator.installEscapeConstant('B', AttributedString.bold + "");
+		CodeGenerator.installEscapeConstant('U', AttributedString.underline + "");
+		CodeGenerator.installEscapeConstant('R', AttributedString.reverse + "");
+		CodeGenerator.installEscapeConstant('C', AttributedString.color + "");
+		CodeGenerator.installEscapeConstant('O', AttributedString.cancel + "");
 
-      scriptLoader.setCharsetConversion(false); // tell sleep to NOT convert characters inside of a script file
-      scriptLoader.setGlobalCache(true); // tell sleep to globally cache all script blocks...  makes loading/reloading quicker for multiple servers + it saves memory :)
-      scriptLoader.addSpecificBridge(this);
+		CodeGenerator.installEscapeConstant('b', AttributedString.bold + "");
+		CodeGenerator.installEscapeConstant('u', AttributedString.underline + "");
+		CodeGenerator.installEscapeConstant('r', AttributedString.reverse + "");
+		CodeGenerator.installEscapeConstant('c', AttributedString.color + "");
+		CodeGenerator.installEscapeConstant('o', AttributedString.cancel + "");
 
-      CodeGenerator.installEscapeConstant('B', AttributedString.bold+"");
-      CodeGenerator.installEscapeConstant('U', AttributedString.underline+"");
-      CodeGenerator.installEscapeConstant('R', AttributedString.reverse+"");
-      CodeGenerator.installEscapeConstant('C', AttributedString.color+"");
-      CodeGenerator.installEscapeConstant('O', AttributedString.cancel+"");
+		SleepUtils.addKeyword("wait"); // register certain scripting keywords with the parser
+		SleepUtils.addKeyword("on");
+		SleepUtils.addKeyword("alias");
+		SleepUtils.addKeyword("bind");
 
-      CodeGenerator.installEscapeConstant('b', AttributedString.bold+"");
-      CodeGenerator.installEscapeConstant('u', AttributedString.underline+"");
-      CodeGenerator.installEscapeConstant('r', AttributedString.reverse+"");
-      CodeGenerator.installEscapeConstant('c', AttributedString.color+"");
-      CodeGenerator.installEscapeConstant('o', AttributedString.cancel+"");
+		Loadable blist[] = bridges.getScriptBridges();
+		for (int x = 0; x < blist.length; x++) {
+			addBridge(blist[x]);
+		}
+	}
 
-      SleepUtils.addKeyword("wait");  // register certain scripting keywords with the parser
-      SleepUtils.addKeyword("on");
-      SleepUtils.addKeyword("alias");
-      SleepUtils.addKeyword("bind");
+	// === Process Imports ===================================================================================
 
-      Loadable blist[] = bridges.getScriptBridges();
-      for (int x = 0; x < blist.length; x++)
-      {
-         addBridge(blist[x]);
-      }
-   }
+	public void announceFramework(ChatFramework ircfw) {
+		bridges.announceFramework(ircfw);
+	}
 
-   // === Process Imports ===================================================================================
+	public void addBridge(Loadable l) {
+		scriptLoader.addGlobalBridge(l);
+	}
 
-   public void announceFramework(ChatFramework ircfw)
-   {
-      bridges.announceFramework(ircfw);
-   }
+	// === Export Data Structures ============================================================================
 
-   public void addBridge(Loadable l)
-   {
-      scriptLoader.addGlobalBridge(l);
-   }
+	public void storeDataStructures(WeakHashMap centralDataRepository) {
+		centralDataRepository.put("scriptVariables", variables);
+		centralDataRepository.put("globalVariables", globalData);
 
-   // === Export Data Structures ============================================================================
+		centralDataRepository.put(DataStructures.ScriptLoader, scriptLoader);
+		centralDataRepository.put(DataStructures.SharedEnv, environment);
 
-   public void storeDataStructures(WeakHashMap centralDataRepository)
-   {
-      centralDataRepository.put("scriptVariables", variables);
-      centralDataRepository.put("globalVariables", globalData);
+		bridges.storeDataStructures(centralDataRepository);
+	}
 
-      centralDataRepository.put(DataStructures.ScriptLoader, scriptLoader);
-      centralDataRepository.put(DataStructures.SharedEnv,    environment);
+	// === Export Capabilities ===============================================================================
 
-      bridges.storeDataStructures(centralDataRepository);
-   }
+	public Scalar callFunction(String function, Stack parameters) {
+		if (function.charAt(0) != '&') {
+			function = '&' + function;
+		}
 
-   // === Export Capabilities ===============================================================================
+		ScriptInstance si = (ScriptInstance) scriptLoader.getScripts().getFirst();
 
-   public Scalar callFunction(String function, Stack parameters)
-   {
-       if (function.charAt(0) != '&')
-       {
-          function = '&' + function;
-       }
+		return si.callFunction(function, parameters);
+	}
 
-       ScriptInstance si = (ScriptInstance)scriptLoader.getScripts().getFirst();
+	/** convienence function for running some code and installing some local variables */
+	public static void runCode(ScriptInstance owner, Block code, HashMap locals) {
+		synchronized (owner.getScriptVariables()) {
+			ScriptVariables vars = owner.getScriptVariables();
 
-       return si.callFunction(function, parameters);
-   }
+			vars.pushLocalLevel();
 
-   /** convienence function for running some code and installing some local variables */
-   public static void runCode(ScriptInstance owner, Block code, HashMap locals)
-   {
-       synchronized (owner.getScriptVariables())
-       {
-          ScriptVariables vars = owner.getScriptVariables();
+			LocalVariables localLevel = (LocalVariables) vars.getLocalVariables();
 
-          vars.pushLocalLevel();
+			if (locals != null) {
+				localLevel.setDataSource(locals);
+			}
 
-          LocalVariables localLevel = (LocalVariables)vars.getLocalVariables();
+			//
+			// execute the block of code
+			//
+			SleepUtils.runCode(code, owner.getScriptEnvironment());
 
-          if (locals != null)
-          {
-              localLevel.setDataSource(locals);
-          }
+			vars.popLocalLevel();
+		}
+	}
 
-          //
-          // execute the block of code
-          //
-          SleepUtils.runCode(code, owner.getScriptEnvironment());
+	// === Implement Interfaces ==============================================================================
 
-          vars.popLocalLevel();
-       }
-   }
+	@Override
+	public void scriptLoaded(ScriptInstance si) {
+		si.setScriptVariables(variables);
+		ClientState.getClientState().fireChange("loaded.scripts", si.getName());
+	}
 
-   // === Implement Interfaces ==============================================================================
-
-   public void scriptLoaded(ScriptInstance si)
-   {
-      si.setScriptVariables(variables);
-      ClientState.getClientState().fireChange("loaded.scripts", si.getName());
-   }
-   
-   public void scriptUnloaded(ScriptInstance si)
-   {
-      ClientState.getClientState().fireChange("loaded.scripts", si.getName());
-   }
+	@Override
+	public void scriptUnloaded(ScriptInstance si) {
+		ClientState.getClientState().fireChange("loaded.scripts", si.getName());
+	}
 }

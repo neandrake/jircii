@@ -1,61 +1,60 @@
 package text;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.colorchooser.*;
-import javax.swing.event.*;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class ModifyColorMapDialog implements ActionListener, ChangeListener
-{
-   protected static ModifyColorMapDialog self;
+import javax.swing.JColorChooser;
+import javax.swing.JComponent;
+import javax.swing.colorchooser.ColorSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-   protected JColorChooser chooser;
+public class ModifyColorMapDialog implements ActionListener, ChangeListener {
+	protected static ModifyColorMapDialog self;
 
-   protected Color      original;
-   protected int        index;
-   protected JComponent source;
+	protected JColorChooser chooser;
 
-   public static void showModifyColorMapDialog(JComponent source, int index)
-   {
-      if (self == null)
-      {
-         self = new ModifyColorMapDialog();
-      }
+	protected Color original;
+	protected int index;
+	protected JComponent source;
 
-      self.showDialogFor(source, index);
-      TextSource.saveColorMap();
-   }
+	public static void showModifyColorMapDialog(JComponent source, int index) {
+		if (self == null) {
+			self = new ModifyColorMapDialog();
+		}
 
-   public ModifyColorMapDialog()
-   {
-      chooser = new JColorChooser();
-      chooser.setPreviewPanel(null);
-      chooser.getSelectionModel().addChangeListener(this);
-   }
+		self.showDialogFor(source, index);
+		TextSource.saveColorMap();
+	}
 
-   public void showDialogFor(JComponent _source, int _index)
-   {
-      index = _index;
-      original = TextSource.colorTable[index];
-      source = _source;
+	public ModifyColorMapDialog() {
+		chooser = new JColorChooser();
+		chooser.setPreviewPanel(null);
+		chooser.getSelectionModel().addChangeListener(this);
+	}
 
-      chooser.setColor(original);
-      JColorChooser.createDialog(null, "Edit Color ("+index+")", true, chooser, null, this).show();
-   }
+	public void showDialogFor(JComponent _source, int _index) {
+		index = _index;
+		original = TextSource.colorTable[index];
+		source = _source;
 
-   public void stateChanged(ChangeEvent ev)
-   {
-      Color newColor = ((ColorSelectionModel)ev.getSource()).getSelectedColor();
-      TextSource.colorTable[index] = newColor;
+		chooser.setColor(original);
+		JColorChooser.createDialog(null, "Edit Color (" + index + ")", true, chooser, null, this).show();
+	}
 
-      source.repaint();
-   }
-   
-   public void actionPerformed(ActionEvent ev)
-   {
-      TextSource.colorTable[index] = original;
+	@Override
+	public void stateChanged(ChangeEvent ev) {
+		Color newColor = ((ColorSelectionModel) ev.getSource()).getSelectedColor();
+		TextSource.colorTable[index] = newColor;
 
-      source.repaint();
-   }
+		source.repaint();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent ev) {
+		TextSource.colorTable[index] = original;
+
+		source.repaint();
+	}
 }

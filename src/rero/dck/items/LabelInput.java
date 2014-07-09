@@ -1,73 +1,72 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
 
-import rero.dck.*;
+import rero.dck.DItem;
+import rero.dck.DParent;
 
-public class LabelInput extends JPanel implements DItem
-{
-   protected JTextPane label;
+public class LabelInput extends JPanel implements DItem {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected JTextPane label;
 
-   public LabelInput(String text, int width)
-   {
-      setLayout(new BorderLayout());
+	public LabelInput(String text, int width) {
+		setLayout(new BorderLayout());
 
-      label = new JTextPane();
-      label.setText(text);
-      label.setBorder(null);
-      label.setOpaque(false);
-      label.setEditable(false);
-      
-      add(label, BorderLayout.CENTER);
-     
-      JPanel gap = new JPanel();
-      gap.setPreferredSize(new Dimension(width, 0));
-      add(gap, BorderLayout.EAST);
+		label = new JTextPane();
+		label.setText(text);
+		label.setBorder(null);
+		label.setOpaque(false);
+		label.setEditable(false);
 
-      gap = new JPanel();
-      gap.setPreferredSize(new Dimension(width, 0));
-      add(gap, BorderLayout.WEST);
-   }
+		add(label, BorderLayout.CENTER);
 
-   public void setEnabled(boolean b)
-   {
-   }
+		JPanel gap = new JPanel();
+		gap.setPreferredSize(new Dimension(width, 0));
+		add(gap, BorderLayout.EAST);
 
-   public void save()
-   {
+		gap = new JPanel();
+		gap.setPreferredSize(new Dimension(width, 0));
+		add(gap, BorderLayout.WEST);
+	}
 
-   }
+	@Override
+	public void setEnabled(boolean b) {}
 
-   public void refresh()
-   {
-   }
+	@Override
+	public void save() {
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+	}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public void refresh() {}
 
-   public void setParent(DParent parent)
-   {
-      
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-   public void setText(String text)
-   {
-      label.setText(text);
-   }
+	@Override
+	public void setAlignWidth(int width) {}
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	@Override
+	public void setParent(DParent parent) {
+
+	}
+
+	public void setText(String text) {
+		label.setText(text);
+	}
+
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 }
-

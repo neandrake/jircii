@@ -1,54 +1,43 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JComponent;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import rero.dck.DItem;
+import rero.dck.DParent;
 
-import rero.config.*;
-import rero.dck.*;
+public class OtherInput implements DItem {
+	protected JComponent other;
 
-public class OtherInput implements DItem
-{
-   protected JComponent other;
+	public OtherInput(JComponent _other) {
+		other = _other;
+	}
 
-   public OtherInput(JComponent _other)
-   {
-      other = _other;
-   }
+	@Override
+	public void setEnabled(boolean b) {
+		other.setEnabled(b);
+	}
 
-   public void setEnabled(boolean b)
-   {
-      other.setEnabled(b);
-   }
+	@Override
+	public void save() {}
 
-   public void save()
-   {
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+	@Override
+	public void setAlignWidth(int width) {}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public void setParent(DParent parent) {
 
-   public void setParent(DParent parent)
-   {
-      
-   }
+	}
 
-   public JComponent getComponent()
-   {
-      return other;
-   }
+	@Override
+	public JComponent getComponent() {
+		return other;
+	}
 
-   public void refresh()
-   {
-   }
+	@Override
+	public void refresh() {}
 }
-
-

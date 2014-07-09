@@ -1,224 +1,216 @@
 package rero.gui.windows;
 
-import rero.ircfw.*;
-import rero.ircfw.data.*;
-import rero.ircfw.interfaces.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
-import rero.client.*;
-import javax.swing.*;
-import text.*;
-import text.event.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.ImageIcon;
+import javax.swing.JPopupMenu;
 
-import rero.bridges.menu.*;
+import rero.bridges.menu.ScriptedPopupMenu;
+import rero.client.Capabilities;
+import rero.config.ClientState;
+import rero.ircfw.Channel;
+import rero.ircfw.InternalDataList;
+import rero.ircfw.User;
+import rero.ircfw.interfaces.ChannelDataWatch;
+import text.ListDisplay;
+import text.event.ClickEvent;
+import text.event.ClickListener;
+import text.list.ListElement;
 
-import text.list.*;
+public class ChannelWindow extends StatusWindow implements ChannelDataWatch {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected Channel channel;
+	protected ListDisplay listbox;
+	protected ChannelListData data;
+	protected Capabilities capabilities;
+	protected MouseAdapter mouseListener; // for nicklist popups.
+	protected ListBoxOptions watcher;
 
-import java.util.*;
+	public ListDisplay getListbox() {
+		return listbox;
+	}
 
-import rero.config.*;
+	@Override
+	public void cleanup() {
+		((InternalDataList) capabilities.getDataStructure("clientInformation")).installChannelWatch(channel.getName(), null);
+		watcher = null;
+		listeners.clear(); // this can't hurt to do.
+		super.cleanup();
+	}
 
-public class ChannelWindow extends StatusWindow implements ChannelDataWatch
-{
-   protected Channel         channel;
-   protected ListDisplay     listbox;
-   protected ChannelListData data;
-   protected Capabilities    capabilities;
-   protected MouseAdapter    mouseListener; // for nicklist popups.
-   protected ListBoxOptions  watcher;
+	public ChannelWindow(Channel _channel) {
+		channel = _channel;
+	}
 
-   public ListDisplay getListbox()
-   {
-      return listbox;
-   }
+	@Override
+	public void init(ClientWindow _temp) {
+		super.init(_temp);
 
-   public void cleanup()
-   {
-      ((InternalDataList)capabilities.getDataStructure("clientInformation")).installChannelWatch(channel.getName(), null);
-      watcher      = null;
-      listeners.clear();  // this can't hurt to do.
-      super.cleanup();
-   }
+		data = new ChannelListData(channel);
+		listbox = new ListDisplay(data);
 
-   public ChannelWindow(Channel _channel)
-   {
-      channel = _channel;
-   }
+		watcher = new ListBoxOptions(this, listbox);
 
-   public void init(ClientWindow _temp)
-   {
-      super.init(_temp);
+		mouseListener = new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent ev) {
+				maybeShowPopupNicklist(ev, "nicklist");
+			}
 
-      data = new ChannelListData(channel);
-      listbox = new ListDisplay(data);
+			@Override
+			public void mouseReleased(MouseEvent ev) {
+				maybeShowPopupNicklist(ev, "nicklist");
+			}
 
-      watcher = new ListBoxOptions(this, listbox);
+			@Override
+			public void mouseClicked(MouseEvent ev) {
+				if (ev.getClickCount() >= 2 && !ev.isPopupTrigger() && (ev.getButton() & MouseEvent.BUTTON3) != MouseEvent.BUTTON3) {
+					fireClickEvent(ev);
+				} else {
+					maybeShowPopupNicklist(ev, "nicklist");
+				}
+			}
+		};
 
-      mouseListener = new MouseAdapter()
-      {
-          public void mousePressed(MouseEvent ev)
-          {
-             maybeShowPopupNicklist(ev, "nicklist");
-          }
+		listbox.addMouseListener(mouseListener);
+	}
 
-          public void mouseReleased(MouseEvent ev)
-          {
-             maybeShowPopupNicklist(ev, "nicklist");
-          }
+	protected void maybeShowPopupNicklist(MouseEvent ev, String desc) {
+		JPopupMenu menu = getPopupMenu(desc, null);
 
-          public void mouseClicked(MouseEvent ev)
-          {
-             if (ev.getClickCount() >= 2 && !ev.isPopupTrigger() && (ev.getButton() & MouseEvent.BUTTON3) != MouseEvent.BUTTON3)
-             {
-                fireClickEvent(ev);
-             }
-             else
-             {
-                maybeShowPopupNicklist(ev, "nicklist");
-             }
-          }
-      };
+		if (ev.isPopupTrigger() && menu != null) {
+			ListElement element = listbox.getSelectedElement();
+			if (element != null) {
+				HashMap eventData = new HashMap();
+				User user = (User) element.getSource();
+				eventData.put("$snick", user.getNick());
 
-      listbox.addMouseListener(mouseListener);
-   }
+				Iterator i = listbox.getSelectedElements().iterator();
+				StringBuffer values = new StringBuffer();
 
-   protected void maybeShowPopupNicklist(MouseEvent ev, String desc)
-   {
-      JPopupMenu menu = getPopupMenu(desc, null);
+				while (i.hasNext()) {
+					User temp = (User) ((ListElement) i.next()).getSource();
 
-      if (ev.isPopupTrigger() && menu != null)
-      {
-         ListElement element = listbox.getSelectedElement();
-         if (element != null)
-         {
-            HashMap eventData = new HashMap();
-            User user = (User)element.getSource();
-            eventData.put("$snick", user.getNick());
+					values.append(temp.getNick());
+					if (i.hasNext()) {
+						values.append(" ");
+					}
+				}
+				eventData.put("$data", getName() + " " + values.toString());
 
-            Iterator i = listbox.getSelectedElements().iterator();
-            StringBuffer values = new StringBuffer();
+				ScriptedPopupMenu.SetMenuData(eventData);
+			}
 
-            while (i.hasNext())
-            {
-               User temp = (User)((ListElement)i.next()).getSource();
+			menu.show(ev.getComponent(), ev.getX(), ev.getY());
+			ev.consume();
+		}
+	}
 
-               values.append(temp.getNick());
-               if (i.hasNext())
-                 values.append(" ");
-            }
-            eventData.put("$data", getName() + " " + values.toString());
+	// called when a ChannelWindow object already exists and you just joined a channel...
+	@Override
+	public void createChannel(Channel c) {
+		channel = c;
+		data.installCapabilities(capabilities);
+		data.updateChannel(channel);
+	}
 
-            ScriptedPopupMenu.SetMenuData(eventData);
-         }
+	@Override
+	public void userAdded(User u) {
+		listbox.repaint();
+	}
 
-         menu.show((JComponent)ev.getComponent(), ev.getX(), ev.getY());
-         ev.consume();
-      }
-   }
+	@Override
+	public void userRemoved(User u) {
+		data.removeUser(u);
+		listbox.repaint();
+	}
 
-   // called when a ChannelWindow object already exists and you just joined a channel...
-   public void createChannel(Channel c)
-   {
-      channel = c;
-      data.installCapabilities(capabilities);
-      data.updateChannel(channel);
-   }
+	@Override
+	public void userChanged() {
+		listbox.repaint();
+	}
 
-   public void userAdded(User u)
-   {
-      listbox.repaint();
-   }
+	@Override
+	public void touch() {
+		super.touch();
+		listbox.repaint();
+	}
 
-   public void userRemoved(User u)
-   {
-      data.removeUser(u);
-      listbox.repaint();
-   }
+	@Override
+	public void installCapabilities(Capabilities c) {
+		capabilities = c;
 
-   public void userChanged()
-   {
-      listbox.repaint();
-   }
+		super.installCapabilities(c);
+		data.installCapabilities(c);
 
-   public void touch()
-   {
-      super.touch();
-      listbox.repaint();
-   }
+		((InternalDataList) c.getDataStructure("clientInformation")).installChannelWatch(channel.getName(), this);
+	}
 
-   public void installCapabilities(Capabilities c)
-   {
-      capabilities = c;
+	@Override
+	public ImageIcon getImageIcon() {
+		if (icon == null) {
+			icon = new ImageIcon(ClientState.getClientState().getResource("channel.gif"));
+		}
 
-      super.installCapabilities(c);
-      data.installCapabilities(c);
+		return icon;
+	}
 
-      ((InternalDataList)c.getDataStructure("clientInformation")).installChannelWatch(channel.getName(), this);
-   }
+	@Override
+	public String getQuery() {
+		return channel.getName();
+	}
 
-   public ImageIcon getImageIcon()
-   {
-      if (icon == null)
-      {
-         icon = new ImageIcon(ClientState.getClientState().getResource("channel.gif"));
-      }
+	@Override
+	public String getName() {
+		if (channel != null) {
+			return channel.getName();
+		}
+		return "";
+	}
 
-      return icon;
-   }
+	@Override
+	public String getWindowType() {
+		return "channel";
+	}
 
-   public String getQuery()
-   {
-      return channel.getName();
-   }
+	protected LinkedList listeners = new LinkedList();
 
-   public String getName()
-   {
-      if (channel != null)
-         return channel.getName();
-      return "";
-   }
+	public void addClickListener(ClickListener l) {
+		listeners.add(l);
+	}
 
-   public String getWindowType()
-   {
-      return "channel";
-   }
+	public void fireClickEvent(MouseEvent mev) {
+		String target = "";
 
-   protected LinkedList listeners = new LinkedList();
+		ListElement element = listbox.getSelectedElement();
+		if (element != null) {
+			User user = (User) element.getSource();
+			target = user.getNick();
 
-   public void addClickListener(ClickListener l)
-   {
-      listeners.add(l);
-   }
+			ClickEvent ev = new ClickEvent(target, target, mev);
 
-   public void fireClickEvent(MouseEvent mev)
-   {
-      String target = "";
+			ListIterator i = listeners.listIterator();
+			while (i.hasNext() && !ev.isConsumed()) {
+				ClickListener l = (ClickListener) i.next();
+				l.wordClicked(ev);
+			}
 
-      ListElement element = listbox.getSelectedElement();
-      if (element != null)
-      {
-          User user = (User)element.getSource();
-          target = user.getNick();
+			if (!ev.isConsumed()) {
+				capabilities.getUserInterface().openQueryWindow(target, true);
+			}
+		}
+	}
 
-          ClickEvent ev = new ClickEvent(target, target, mev);
-
-          ListIterator i = listeners.listIterator();
-          while (i.hasNext() && !ev.isConsumed())
-          {
-             ClickListener l = (ClickListener)i.next();
-             l.wordClicked(ev);
-          }
-
-          if (!ev.isConsumed())
-          {
-             capabilities.getUserInterface().openQueryWindow(target, true);
-          }
-      }
-   }
-
-   public int compareWindowType()
-   {
-      return 2;
-   }   
+	@Override
+	public int compareWindowType() {
+		return 2;
+	}
 }

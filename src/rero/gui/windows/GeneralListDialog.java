@@ -1,188 +1,187 @@
 package rero.gui.windows;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.HashMap;
 
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.ToolTipManager;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
-import java.util.*;
-import rero.util.*;
+import rero.config.ClientState;
+import rero.gui.toolkit.GeneralListModel;
+import text.AttributedLabel;
+import text.AttributedString;
+import text.TextSource;
+import contrib.javapro.JSortTable; // sorted JTable code...
 
-import contrib.javapro.*;  // sorted JTable code...
+public class GeneralListDialog extends EmptyWindow {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected GeneralListModel model;
+	protected JSortTable table;
+	protected String popupHook;
+	protected String name;
 
-import rero.ircfw.interfaces.*;
+	public GeneralListDialog(String _name, String _hook, GeneralListModel _model) {
+		name = _name;
+		popupHook = _hook;
 
-import rero.config.*;
-import rero.client.*;
+		this.model = _model;
 
-import rero.gui.*;
-import rero.gui.windows.*;
+		setLayout(new BorderLayout());
 
-import text.*;
+		table = new JSortTable(model);
+		table.setOpaque(false);
+		table.setRowSelectionAllowed(true);
+		table.setColumnSelectionAllowed(false);
+		table.setDefaultRenderer((new Object()).getClass(), new MyRenderer());
+		table.setShowGrid(false);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.setRowHeight(TextSource.fontMetrics.getHeight() + 2);
 
-import rero.gui.toolkit.*;
+		JScrollPane scroller = new JScrollPane(table, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scroller.setOpaque(false);
+		scroller.getViewport().setOpaque(false);
+		scroller.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, new JPanel());
 
-public class GeneralListDialog extends EmptyWindow
-{
-   protected GeneralListModel  model;
-   protected JSortTable        table;
-   protected String            popupHook;
-   protected String            name;
+		TableColumn tempcol;
+		int x = 0;
 
-   public GeneralListDialog(String _name, String _hook, GeneralListModel _model)
-   {
-      name = _name;
-      popupHook = _hook;
+		tempcol = table.getColumnModel().getColumn(x);
+		tempcol.setMinWidth(1);
+		tempcol.setMaxWidth(model.getColumnWidth(x) * 3);
+		tempcol.setPreferredWidth(model.getColumnWidth(x));
 
-      this.model = _model;
+		for (x = 1; x < model.getColumnCount() - 1; x++) {
+			tempcol = table.getColumnModel().getColumn(x);
+			tempcol.setMinWidth(1);
+			tempcol.setMaxWidth(model.getColumnWidth(x) * 3);
+			tempcol.sizeWidthToFit();
+		}
 
-      setLayout(new BorderLayout());
+		table.setRowSelectionAllowed(true);
 
-      table = new JSortTable(model);
-      table.setOpaque(false);
-      table.setRowSelectionAllowed(true);
-      table.setColumnSelectionAllowed(false);
-      table.setDefaultRenderer((new Object()).getClass(), new MyRenderer());
-      table.setShowGrid(false);
-      table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      table.setRowHeight(TextSource.fontMetrics.getHeight() + 2);
+		scroller.setViewportBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0)); // a small tweak to make the sorted list
+																					// dialogs look alright
 
-      JScrollPane scroller = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-      scroller.setOpaque(false);
-      scroller.getViewport().setOpaque(false);
-      scroller.setCorner(JScrollPane.UPPER_RIGHT_CORNER, new JPanel());
+		ToolTipManager.sharedInstance().unregisterComponent(table); // performance enhancement, disable the tooltip for the
+																	// elements
+		ToolTipManager.sharedInstance().unregisterComponent(table.getTableHeader());
 
-      TableColumn tempcol;
-      int         x = 0;
+		add(scroller);
 
-      tempcol = table.getColumnModel().getColumn(x);
-      tempcol.setMinWidth(1);
-      tempcol.setMaxWidth(model.getColumnWidth(x) * 3);
-      tempcol.setPreferredWidth(model.getColumnWidth(x));
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Point p = e.getPoint();
+				int row = table.rowAtPoint(p);
+				int column = table.columnAtPoint(p); // This is the view column!
 
-      for (x = 1; x < model.getColumnCount() - 1; x++)
-      {
-         tempcol = table.getColumnModel().getColumn(x);
-         tempcol.setMinWidth(1);
-         tempcol.setMaxWidth(model.getColumnWidth(x) * 3);
-         tempcol.sizeWidthToFit();
-      }
+				maybeShowPopup(e, model.getEventHashMap(row));
+			}
 
-      table.setRowSelectionAllowed(true);
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				Point p = e.getPoint();
+				int row = table.rowAtPoint(p);
+				int column = table.columnAtPoint(p); // This is the view column!
 
-      scroller.setViewportBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0)); // a small tweak to make the sorted list dialogs look alright
+				maybeShowPopup(e, model.getEventHashMap(row));
 
-      ToolTipManager.sharedInstance().unregisterComponent(table); // performance enhancement, disable the tooltip for the elements
-      ToolTipManager.sharedInstance().unregisterComponent(table.getTableHeader());
+				if (e.getClickCount() == 2 && !e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON1 && !e.isConsumed()) {
+					processMouseEvent(e, row);
+					e.consume();
+				}
 
-      add(scroller);
+			}
 
-      table.addMouseListener(new MouseAdapter()
-      {
-         public void mousePressed(MouseEvent e)
-         {
-            Point p = e.getPoint();
-            int row = table.rowAtPoint(p);
-            int column = table.columnAtPoint(p); // This is the view column!
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				Point p = e.getPoint();
+				int row = table.rowAtPoint(p);
+				int column = table.columnAtPoint(p); // This is the view column!
 
-            maybeShowPopup(e, model.getEventHashMap(row));
-         }
+				maybeShowPopup(e, model.getEventHashMap(row));
+			}
+		});
+	}
 
-         public void mouseClicked(MouseEvent e)
-         {
-            Point p = e.getPoint();
-            int row = table.rowAtPoint(p);
-            int column = table.columnAtPoint(p); // This is the view column!
+	@Override
+	public void init() {}
 
-            maybeShowPopup(e, model.getEventHashMap(row));
+	protected void maybeShowPopup(MouseEvent ev, HashMap data) {
+		JPopupMenu menu = getPopupMenu(popupHook, data);
 
-            if (e.getClickCount() == 2 && !e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON1 && !e.isConsumed())
-            {
-               processMouseEvent(e, row);
-               e.consume();
-            }
+		if (ev.isPopupTrigger() && menu != null) {
+			menu.show(ev.getComponent(), ev.getX(), ev.getY());
+			ev.consume();
+		}
+	}
 
-         }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-         public void mouseReleased(MouseEvent e)
-         {
-            Point p = e.getPoint();
-            int row = table.rowAtPoint(p);
-            int column = table.columnAtPoint(p); // This is the view column!
+	@Override
+	public ImageIcon getImageIcon() {
+		if (icon == null) {
+			icon = new ImageIcon(ClientState.getClientState().getResource("jsmall.gif"));
+		}
 
-            maybeShowPopup(e, model.getEventHashMap(row));
-         }
-       });
-   }
+		return icon;
+	}
 
-   public void init() { }
+	public void processMouseEvent(MouseEvent ev, int row) {
+		fireClickEvent(row + "", ev);
+	}
 
-   protected void maybeShowPopup(MouseEvent ev, HashMap data)
-   {
-      JPopupMenu menu = getPopupMenu(popupHook, data);
+	private static class MyRenderer implements TableCellRenderer {
+		private JLabel select = new JLabel();
+		private AttributedLabel labeln = new AttributedLabel();
+		private AttributedLabel labels = new AttributedLabel();
 
-      if (ev.isPopupTrigger() && menu != null)
-      {
-         menu.show((JComponent)ev.getComponent(), ev.getX(), ev.getY());
-         ev.consume();
-      }
-   }
+		public MyRenderer() {
+			select.setOpaque(true);
 
-   public String getName()
-   {
-      return name;
-   }
+			select.setLayout(new BorderLayout());
+			select.setBorder(BorderFactory.createEmptyBorder(0, TextSource.UNIVERSAL_TWEAK, 0, 0));
+			select.add(labels);
+		}
 
-   public ImageIcon getImageIcon()
-   {
-      if (icon == null)
-      {
-         icon = new ImageIcon(ClientState.getClientState().getResource("jsmall.gif"));
-      }
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			if (value == null) {
+				return new JLabel();
+			}
 
-      return icon;
-   }
+			AttributedString attrs = (AttributedString) value;
 
-   public void processMouseEvent(MouseEvent ev, int row)
-   {
-      fireClickEvent(row+"", ev);
-   }
+			if (isSelected) {
+				select.setFont(TextSource.clientFont);
+				select.setBackground(table.getSelectionBackground());
+				select.setForeground(table.getSelectionForeground());
+				select.setText(attrs.getText());
+				return select;
+			}
 
-   private static class MyRenderer implements TableCellRenderer
-   {
-      private JLabel          select = new JLabel();
-      private AttributedLabel labeln = new AttributedLabel();
-      private AttributedLabel labels = new AttributedLabel();
-
-      public MyRenderer()
-      {
-         select.setOpaque(true);
-
-         select.setLayout(new BorderLayout());
-         select.setBorder(BorderFactory.createEmptyBorder(0, TextSource.UNIVERSAL_TWEAK, 0, 0));
-         select.add(labels);
-      }
-
-      public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-      {
-         if (value == null)
-            return new JLabel();
-
-         AttributedString attrs = (AttributedString)value;
-
-         if (isSelected)
-         {
-            select.setFont(TextSource.clientFont);
-            select.setBackground(table.getSelectionBackground());
-            select.setForeground(table.getSelectionForeground());
-            select.setText(attrs.getText());
-            return select;
-         }
-
-         labeln.setText(attrs);
-         return labeln;
-      }
-   }
+			labeln.setText(attrs);
+			return labeln;
+		}
+	}
 }

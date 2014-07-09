@@ -1,49 +1,43 @@
 package rero.ircfw.data;
 
-import rero.ircfw.*;
 import java.util.HashMap;
 
-public class FwDataHandler
-{
-    protected DataEventAction[]   responders;
-    protected InternalDataList    dataList;
+import rero.ircfw.InternalDataList;
 
-    public FwDataHandler()
-    {
-        /* instantiate lists */
-        dataList = new InternalDataList();
+public class FwDataHandler {
+	protected DataEventAction[] responders;
+	protected InternalDataList dataList;
 
-        /* instantiate each responder */
-        responders = new DataEventAction[6];
+	public FwDataHandler() {
+		/* instantiate lists */
+		dataList = new InternalDataList();
 
-        responders[0] = new AddressSucker();
-        responders[1] = new ChannelInformationTracker();
-        responders[2] = new ChannelUserWatch();
-        responders[3] = new MyInformationTracker();        
-        responders[4] = new ModeTracker();
-        responders[5] = new UserHostParser();
+		/* instantiate each responder */
+		responders = new DataEventAction[6];
 
-        for (int x = 0; x < responders.length; x++)
-        {
-            responders[x].passStructures(dataList); 
-        }
-    }     
+		responders[0] = new AddressSucker();
+		responders[1] = new ChannelInformationTracker();
+		responders[2] = new ChannelUserWatch();
+		responders[3] = new MyInformationTracker();
+		responders[4] = new ModeTracker();
+		responders[5] = new UserHostParser();
 
-    public InternalDataList getDataList()
-    {
-        return dataList;
-    }
+		for (int x = 0; x < responders.length; x++) {
+			responders[x].passStructures(dataList);
+		}
+	}
 
-    public HashMap parseEvent(HashMap data)
-    {
-        for (int x = 0; x < responders.length; x++)
-        {
-            if (responders[x].isEvent(data))
-            {
-                responders[x].process(data);
-            }
-        }
+	public InternalDataList getDataList() {
+		return dataList;
+	}
 
-        return data;
-    }
+	public HashMap parseEvent(HashMap data) {
+		for (int x = 0; x < responders.length; x++) {
+			if (responders[x].isEvent(data)) {
+				responders[x].process(data);
+			}
+		}
+
+		return data;
+	}
 }

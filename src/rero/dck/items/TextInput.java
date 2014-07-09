@@ -1,83 +1,81 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 
-import java.util.*;
+import rero.config.ClientState;
+import rero.config.StringList;
+import rero.dck.SuperInput;
 
-import java.io.*;
+public class TextInput extends SuperInput implements ActionListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected JEditorPane text;
 
-import rero.dck.*;
-import rero.config.*;
+	public TextInput(String _variable, int inset) {
+		text = new JEditorPane();
+		setLayout(new BorderLayout(2, 2));
 
-public class TextInput extends SuperInput implements ActionListener
-{
-   protected JEditorPane   text;
+		add(new JScrollPane(text), BorderLayout.CENTER);
 
-   public TextInput(String _variable, int inset)
-   {
-      text   = new JEditorPane();
-      setLayout(new BorderLayout(2, 2));
+		variable = _variable;
 
-      add(new JScrollPane(text), BorderLayout.CENTER);
+		setBorder(BorderFactory.createEmptyBorder(0, inset, 0, inset));
+	}
 
-      variable = _variable;
+	@Override
+	public void actionPerformed(ActionEvent ev) {
+		text.setText("");
+	}
 
-      setBorder(BorderFactory.createEmptyBorder(0, inset, 0, inset));
-   }
+	@Override
+	public void save() {
+		String[] blah = text.getText().split("\n");
 
-   public void actionPerformed(ActionEvent ev)
-   {
-      text.setText("");
-   }
+		StringList temp = new StringList(getVariable());
+		temp.clear();
 
-   public void save()
-   {
-      String[] blah = text.getText().split("\n");
+		for (int x = 0; x < blah.length; x++) {
+			temp.add(blah[x]);
+		}
 
-      StringList temp = new StringList(getVariable());
-      temp.clear();
+		temp.save();
+	}
 
-      for (int x = 0; x < blah.length; x++)
-      {
-         temp.add(blah[x]);
-      }
+	@Override
+	public int getEstimatedWidth() {
+		return -1;
+	}
 
-      temp.save();
-   }
+	@Override
+	public void setAlignWidth(int width) {}
 
-   public int getEstimatedWidth()
-   {
-      return -1;
-   }
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public void refresh() {
+		StringList string = ClientState.getClientState().getStringList(getVariable());
+		StringBuffer data = new StringBuffer();
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+		Iterator i = string.getList().iterator();
+		while (i.hasNext()) {
+			data.append(i.next());
+			data.append("\n");
+		}
 
-   public void refresh()
-   {
-      StringList string = ClientState.getClientState().getStringList(getVariable());
-      StringBuffer data = new StringBuffer();
-
-      Iterator i = string.getList().iterator();
-      while (i.hasNext())
-      {
-         data.append(i.next());
-         data.append("\n");
-      }
-      
-      text.setText(data.toString());
-      text.setCaretPosition(0);
-   }
+		text.setText(data.toString());
+		text.setCaretPosition(0);
+	}
 }
-
-

@@ -1,50 +1,50 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Dimension;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
-import rero.dck.*;
+import rero.dck.DItem;
+import rero.dck.DParent;
 
-public class BlankInput extends JPanel implements DItem
-{
-   public void setEnabled(boolean b)
-   {
-   }
+public class BlankInput extends JPanel implements DItem {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-   public void save()
-   {
+	@Override
+	public void setEnabled(boolean b) {}
 
-   }
+	@Override
+	public void save() {
 
-   public void refresh()
-   {
-   }
+	}
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+	@Override
+	public void refresh() {}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-   public void setParent(DParent parent)
-   {
-      
-   }
+	@Override
+	public void setAlignWidth(int width) {}
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	@Override
+	public void setParent(DParent parent) {
 
-   public Dimension getPreferredSize()
-   {
-      return new Dimension(0, 5);
-   }
+	}
+
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		return new Dimension(0, 5);
+	}
 }
-

@@ -1,141 +1,146 @@
 package rero.gui.windows;
 
-import rero.gui.*;
-import rero.gui.input.*;
-import rero.gui.background.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseEvent;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
-import rero.client.*;
-import java.util.HashMap;
-import rero.util.ClientUtils;
+import javax.swing.ImageIcon;
 
-import rero.ircfw.*;
+import rero.bridges.menu.MenuBridge;
+import rero.client.Capabilities;
+import rero.gui.input.InputField;
+import text.WrappedDisplay;
+import text.event.ClickEvent;
+import text.event.ClickListener;
 
-import rero.bridges.menu.*;
+public abstract class EmptyWindow extends StatusWindow implements ClientWindowListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-import text.*;
-import rero.config.*;
+	@Override
+	public void touch() {}
 
-import java.util.*;
-import text.event.*;
+	@Override
+	public void installCapabilities(Capabilities c) {
+		capabilities = c;
+		menuManager = (MenuBridge) c.getDataStructure("menuBridge");
 
-public abstract class EmptyWindow extends StatusWindow implements ClientWindowListener
-{
-   public void touch()
-   {
-   }
+		init();
+	}
 
-   public void installCapabilities(Capabilities c)
-   {
-      capabilities = c;
-      menuManager = (MenuBridge)c.getDataStructure("menuBridge");
+	@Override
+	public InputField getInput() {
+		return null;
+	}
 
-      init();
-   }
+	@Override
+	public WrappedDisplay getDisplay() {
+		return null;
+	}
 
-   public InputField getInput()
-   {
-      return null;
-   }
+	@Override
+	public WindowStatusBar getStatusBar() {
+		return null;
+	}
 
-   public WrappedDisplay getDisplay()
-   {
-      return null;
-   }
+	@Override
+	public void init(ClientWindow _frame) {
+		frame = _frame;
+		frame.addWindowListener(new ClientWindowStuff());
+		frame.addWindowListener(this);
 
-   public WindowStatusBar getStatusBar()
-   {
-      return null;
-   }
+		frame.setContentPane(this);
 
-   public void init(ClientWindow _frame)
-   {
-      frame = _frame;
-      frame.addWindowListener(new ClientWindowStuff());
-      frame.addWindowListener(this);
+		setTitle(getName());
+		frame.setIcon(getImageIcon());
+	}
 
-      frame.setContentPane(this);
+	public abstract void init();
 
-      setTitle(getName());
-      frame.setIcon(getImageIcon());
-   }
+	@Override
+	public String getQuery() {
+		return "Nada";
+	}
 
-   public abstract void init();
+	@Override
+	public void setQuery(String q) {}
 
-   public String getQuery()
-   {
-      return "Nada";
-   }
+	@Override
+	public void setTitle(String title) {
+		frame.setTitle(title);
+	}
 
-   public void setQuery(String q)
-   {
-   }
+	@Override
+	public ClientWindow getWindow() {
+		return frame;
+	}
 
-   public void setTitle(String title)
-   {
-      frame.setTitle(title);
-   }
+	@Override
+	public String getTitle() {
+		return frame.getTitle();
+	}
 
-   public ClientWindow getWindow() 
-   {
-      return frame;
-   }
+	@Override
+	public abstract String getName();
 
-   public String getTitle()
-   {
-      return frame.getTitle();
-   }
+	@Override
+	public abstract ImageIcon getImageIcon();
 
-   public abstract String getName();
+	@Override
+	public String getWindowType() {
+		return "Other";
+	}
 
-   public abstract ImageIcon getImageIcon();
+	@Override
+	public boolean isLegalWindow() {
+		return false;
+	}
 
-   public String getWindowType()
-   {
-      return "Other";
-   }
+	private boolean isOpen = true;
 
-   public boolean isLegalWindow()
-   {
-      return false;
-   }
+	public boolean isOpen() {
+		return isOpen;
+	}
 
-   private boolean isOpen = true;
+	@Override
+	public void onActive(ClientWindowEvent ev) {}
 
-   public boolean isOpen()
-   {
-      return isOpen;
-   }
+	@Override
+	public void onOpen(ClientWindowEvent ev) {
+		isOpen = true;
+	}
 
-   public void onActive(ClientWindowEvent ev) { }
-   public void onOpen(ClientWindowEvent ev) { isOpen = true; }
-   public void onInactive(ClientWindowEvent ev) { }
-   public void onMinimize(ClientWindowEvent ev) { }
-   public void onClose(ClientWindowEvent ev) { isOpen = false; }
+	@Override
+	public void onInactive(ClientWindowEvent ev) {}
 
-   protected LinkedList listeners = new LinkedList();
+	@Override
+	public void onMinimize(ClientWindowEvent ev) {}
 
-   public void addClickListener(ClickListener l)
-   {
-      listeners.add(l);
-   }
+	@Override
+	public void onClose(ClientWindowEvent ev) {
+		isOpen = false;
+	}
 
-   public void fireClickEvent(String text, MouseEvent mev)
-   {
-      ClickEvent ev = new ClickEvent(text, getName(), mev);
+	protected LinkedList listeners = new LinkedList();
 
-      ListIterator i = listeners.listIterator();
-      while (i.hasNext() && !ev.isConsumed())
-      {
-          ClickListener l = (ClickListener)i.next();
-          l.wordClicked(ev);
-      }
-   }
+	public void addClickListener(ClickListener l) {
+		listeners.add(l);
+	}
 
-   public int compareWindowType()
-   {
-      return 4;
-   }
+	public void fireClickEvent(String text, MouseEvent mev) {
+		ClickEvent ev = new ClickEvent(text, getName(), mev);
+
+		ListIterator i = listeners.listIterator();
+		while (i.hasNext() && !ev.isConsumed()) {
+			ClickListener l = (ClickListener) i.next();
+			l.wordClicked(ev);
+		}
+	}
+
+	@Override
+	public int compareWindowType() {
+		return 4;
+	}
 }

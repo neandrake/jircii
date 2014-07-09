@@ -1,269 +1,238 @@
 package rero.gui.windows;
 
-import rero.ircfw.*;
-import rero.ircfw.data.*;
-import rero.ircfw.interfaces.*;
+import java.util.HashMap;
+import java.util.Iterator;
 
-import text.list.*;
-import text.*;
-import rero.client.*;
-import java.util.*;
-
-import rero.gui.*;
+import rero.client.Capabilities;
+import rero.client.DataStructures;
+import rero.ircfw.Channel;
+import rero.ircfw.User;
+import text.AttributedString;
+import text.AttributedText;
+import text.list.ListData;
+import text.list.ListElement;
 
 /** I did not enjoy writing this code... really */
-public class ChannelListData extends ListData 
-{
-   protected HashMap      userInfo;
-   protected Channel      channel;
+public class ChannelListData extends ListData {
+	protected HashMap userInfo;
+	protected Channel channel;
 
-   protected Capabilities capabilities;
+	protected Capabilities capabilities;
 
-   protected HashMap      event;
-   protected Iterator     tempIter;
+	protected HashMap event;
+	protected Iterator tempIter;
 
-   protected int          iterValue;
+	protected int iterValue;
 
-   public void dirty()
-   {
-      userInfo.clear();
-   }
+	@Override
+	public void dirty() {
+		userInfo.clear();
+	}
 
-   public void removeUser(User u)
-   {
-      userInfo.remove(u);
-   }
+	public void removeUser(User u) {
+		userInfo.remove(u);
+	}
 
-   public void installCapabilities(Capabilities c)
-   {
-      capabilities = c;
-   }
+	public void installCapabilities(Capabilities c) {
+		capabilities = c;
+	}
 
-   public void updateChannel(Channel _channel)
-   {
-      channel = _channel;
+	public void updateChannel(Channel _channel) {
+		channel = _channel;
 
-      event = new HashMap();
-      event.put("$channel", channel.getName());
+		event = new HashMap();
+		event.put("$channel", channel.getName());
 
-      userInfo = new HashMap();
-   }
+		userInfo = new HashMap();
+	}
 
-   public ChannelListData(Channel _channel)
-   {
-      updateChannel(_channel);
-   }
+	public ChannelListData(Channel _channel) {
+		updateChannel(_channel);
+	}
 
-   public int getSize()
-   {
-      if (getChannel() == null) { return 0; }
-      return getChannel().getAllUsers().size();
-   }
+	@Override
+	public int getSize() {
+		if (getChannel() == null) {
+			return 0;
+		}
+		return getChannel().getAllUsers().size();
+	}
 
-   public Channel getChannel()
-   {      
-      return channel;
-   }
+	public Channel getChannel() {
+		return channel;
+	}
 
-   public ListElement head()
-   {
-      if (getChannel() == null)
-      {
-         return null;
-      }
+	@Override
+	public ListElement head() {
+		if (getChannel() == null) {
+			return null;
+		}
 
-      iterValue = getValue();
-      tempIter = getChannel().getAllUsers().iterator();
-      for (int x = 0; x < iterValue; x++)
-      {
-         tempIter.next();
-      }
-      return next();
-   }
-  
-   public ListElement next()
-   {
-      if (getChannel() != null && tempIter.hasNext()) 
-      {
-         return getElementForUser((User)tempIter.next());
-      }
-      return null;
-   }
+		iterValue = getValue();
+		tempIter = getChannel().getAllUsers().iterator();
+		for (int x = 0; x < iterValue; x++) {
+			tempIter.next();
+		}
+		return next();
+	}
 
-   // in the listbox painting code we ensure we have the script variable lock first before doing any painting...
-   public Object getSynchronizationKeyOuter()
-   {
-      if (capabilities != null)
-      {
-         // lock this tree by the script variables so no other thread can touch it...
-         return capabilities.getDataStructure(DataStructures.ScriptVariables);
-      }
-      else
-      {
-         return getChannel().getAllUsers(); // prevent a null pointer exception when capabilities haven't been installed yet
-      }
-   }
+	@Override
+	public ListElement next() {
+		if (getChannel() != null && tempIter.hasNext()) {
+			return getElementForUser((User) tempIter.next());
+		}
+		return null;
+	}
 
-   public Object getSynchronizationKeyInner()
-   {
-      return getChannel().getAllUsers();
-   }
+	// in the listbox painting code we ensure we have the script variable lock first before doing any painting...
+	@Override
+	public Object getSynchronizationKeyOuter() {
+		if (capabilities != null) {
+			// lock this tree by the script variables so no other thread can touch it...
+			return capabilities.getDataStructure(DataStructures.ScriptVariables);
+		} else {
+			return getChannel().getAllUsers(); // prevent a null pointer exception when capabilities haven't been installed
+												// yet
+		}
+	}
 
-   protected ListElement getElementForUser(User u)
-   {
-      UserElement temp = (UserElement)userInfo.get(u);
-      if (temp == null)
-      {
-         temp = new UserElement(u);
-         userInfo.put(u, temp);
-      }
-      temp.touch();
-      return temp;
-   }
+	@Override
+	public Object getSynchronizationKeyInner() {
+		return getChannel().getAllUsers();
+	}
 
-   public ListElement getElementAt(int number)
-   {
-      if (getChannel() == null) 
-      {
-         return null;
-      }
+	protected ListElement getElementForUser(User u) {
+		UserElement temp = (UserElement) userInfo.get(u);
+		if (temp == null) {
+			temp = new UserElement(u);
+			userInfo.put(u, temp);
+		}
+		temp.touch();
+		return temp;
+	}
 
-      Iterator i = getChannel().getAllUsers().iterator();
-      for (int x = 0; x < number && i.hasNext(); x++)
-      {
-         i.next();
-      }
+	@Override
+	public ListElement getElementAt(int number) {
+		if (getChannel() == null) {
+			return null;
+		}
 
-      if (i.hasNext())
-      {
-         User t = (User)i.next();
-         return getElementForUser(t);
-      }
-      else
-      {
-         return null;
-      }
-   }
+		Iterator i = getChannel().getAllUsers().iterator();
+		for (int x = 0; x < number && i.hasNext(); x++) {
+			i.next();
+		}
 
-    public Iterator dataIterator()
-    {
-       return new MyIterator();
-    }
+		if (i.hasNext()) {
+			User t = (User) i.next();
+			return getElementForUser(t);
+		} else {
+			return null;
+		}
+	}
 
-    private class MyIterator implements Iterator
-    {
-       protected Iterator i;
-  
-       public MyIterator()
-       {
-          i = getChannel().getAllUsers().iterator();
-       }
+	@Override
+	public Iterator dataIterator() {
+		return new MyIterator();
+	}
 
-       public boolean hasNext()
-       {
-          return i.hasNext();          
-       }
+	private class MyIterator implements Iterator {
+		protected Iterator i;
 
-       public Object next()
-       {
-          return getElementForUser((User)i.next());
-       }
+		public MyIterator() {
+			i = getChannel().getAllUsers().iterator();
+		}
 
-       public void remove() { }
-    }
+		@Override
+		public boolean hasNext() {
+			return i.hasNext();
+		}
 
-    private class UserElement extends ListElement
-    {
-       protected int         oldState;  
-       protected User        user;      
-       protected AttributedString idle   = null;
-       protected AttributedString normal = null;       
-       protected int         oldNick;
+		@Override
+		public Object next() {
+			return getElementForUser((User) i.next());
+		}
 
-       public UserElement(User _user)
-       {
-          user     = _user;
-          oldState = _user.getModeFor(getChannel()); 
-          oldNick  = _user.getNick().hashCode();
+		@Override
+		public void remove() {}
+	}
 
-          setSource(user);
-       }
+	private class UserElement extends ListElement {
+		protected int oldState;
+		protected User user;
+		protected AttributedString idle = null;
+		protected AttributedString normal = null;
+		protected int oldNick;
 
-       public void touch()
-       {
-          if (oldState != user.getModeFor(getChannel()) || oldNick != user.getNick().hashCode())
-          {
-             idle   = null;
-             normal = null;
-             oldNick  = user.getNick().hashCode();
-             oldState = user.getModeFor(getChannel());
-             setSelected(false);
-          }
-       }
+		public UserElement(User _user) {
+			user = _user;
+			oldState = _user.getModeFor(getChannel());
+			oldNick = _user.getNick().hashCode();
 
-       protected AttributedString buildString(String prepend)
-       {
-//          try
-//          {
-             if (capabilities != null) // some sort of weird race condition causes this to be null occasionally
-             {
-                event.put("$nick", user.getNick());
-  
-                AttributedString temp = AttributedString.CreateAttributedString(prepend + capabilities.getOutputCapabilities().parseSet(event, "NICKLIST_FORMAT"));
-                temp.assignWidths();
-                return temp;
-             }
-  /*        }
-          catch (NullPointerException ex)
-          {
-             System.out.println("User:         " + user);
-             System.out.println("prepend:      " + prepend);
-             System.out.println("capabilities: " + capabilities);
-             System.out.println("event:        " + event);
-             System.out.println("output:       " + capabilities.getOutputCapabilities());
-             System.out.println("getNick():    " + user.getNick());
-          } */
+			setSource(user);
+		}
 
-          return null;
-       }
- 
-       protected AttributedString getData()
-       {
-          if (user.getIdleTime() > (5 * 60))
-          {
-             if (idle == null)
-             {
-                idle = buildString("" + AttributedString.reverse);
-             }
-             return idle;              
-          }
-          else
-          {
-             if (normal == null)
-             {
-                normal = buildString("");
-             }
-             return normal;
-          }
-       }
+		public void touch() {
+			if (oldState != user.getModeFor(getChannel()) || oldNick != user.getNick().hashCode()) {
+				idle = null;
+				normal = null;
+				oldNick = user.getNick().hashCode();
+				oldState = user.getModeFor(getChannel());
+				setSelected(false);
+			}
+		}
 
-       public AttributedText getAttributedText()
-       {
-          AttributedString data = getData();
+		protected AttributedString buildString(String prepend) {
+			// try
+			// {
+			if (capabilities != null) // some sort of weird race condition causes this to be null occasionally
+			{
+				event.put("$nick", user.getNick());
 
-          if (data != null)
-             return getData().getAttributedText();
+				AttributedString temp = AttributedString.CreateAttributedString(prepend + capabilities.getOutputCapabilities().parseSet(event, "NICKLIST_FORMAT"));
+				temp.assignWidths();
+				return temp;
+			}
+			/*
+			 * } catch (NullPointerException ex) { System.out.println("User:         " + user);
+			 * System.out.println("prepend:      " + prepend); System.out.println("capabilities: " + capabilities);
+			 * System.out.println("event:        " + event); System.out.println("output:       " +
+			 * capabilities.getOutputCapabilities()); System.out.println("getNick():    " + user.getNick()); }
+			 */
 
-          AttributedString temp = AttributedString.CreateAttributedString("");
-          temp.assignWidths();
+			return null;
+		}
 
-          return temp.getAttributedText();
-       }
+		protected AttributedString getData() {
+			if (user.getIdleTime() > (5 * 60)) {
+				if (idle == null) {
+					idle = buildString("" + AttributedString.reverse);
+				}
+				return idle;
+			} else {
+				if (normal == null) {
+					normal = buildString("");
+				}
+				return normal;
+			}
+		}
 
-       public String getText()
-       { 
-          return getData().getText();
-       }
-    }
+		@Override
+		public AttributedText getAttributedText() {
+			AttributedString data = getData();
+
+			if (data != null) {
+				return getData().getAttributedText();
+			}
+
+			AttributedString temp = AttributedString.CreateAttributedString("");
+			temp.assignWidths();
+
+			return temp.getAttributedText();
+		}
+
+		@Override
+		public String getText() {
+			return getData().getText();
+		}
+	}
 }
-

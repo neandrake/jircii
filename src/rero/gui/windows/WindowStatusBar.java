@@ -1,147 +1,145 @@
 package rero.gui.windows;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import text.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.util.HashMap;
 
-import rero.client.*;
-import rero.client.notify.*; // lag checking mechanism is part of the notify list implementation (it piggy backs off of it)
+import javax.swing.BorderFactory;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import javax.swing.border.*;
+import rero.client.Capabilities;
+import rero.client.notify.Lag; // lag checking mechanism is part of the notify list implementation (it piggy backs off of it)
+import rero.config.ClientDefaults;
+import rero.config.ClientState;
+import rero.config.ClientStateListener;
+import rero.gui.IRCAwareComponent;
+import rero.gui.background.BackgroundToolBar;
+import text.LabelDisplay;
+import text.TextSource;
 
-import rero.gui.*;
-import rero.gui.background.*;
-import java.util.*;
+public class WindowStatusBar extends BackgroundToolBar implements IRCAwareComponent, ChangeListener, ClientStateListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected LabelDisplay contents;
+	protected HashMap event;
+	protected StatusWindow parent;
+	protected Capabilities capabilities;
+	protected long lastRehash;
 
-import rero.config.*;
+	@Override
+	public void installCapabilities(Capabilities c) {
+		capabilities = c;
 
-public class WindowStatusBar extends BackgroundToolBar implements IRCAwareComponent, ChangeListener, ClientStateListener
-{
-   protected LabelDisplay contents;
-   protected HashMap      event;
-   protected StatusWindow parent;
-   protected Capabilities capabilities;
-   protected long         lastRehash;
+		Lag temp = (Lag) capabilities.getDataStructure("lag");
+		temp.addChangeListener(this);
+	}
 
-   public void installCapabilities(Capabilities c) 
-   {
-       capabilities = c;       
+	@Override
+	public void stateChanged(ChangeEvent ev) {
+		rehash();
+		repaint();
+	}
 
-       Lag temp = (Lag)capabilities.getDataStructure("lag");
-       temp.addChangeListener(this);
-   }
+	public WindowStatusBar(StatusWindow _parent) {
+		contents = new LabelDisplay();
 
-   public void stateChanged(ChangeEvent ev)
-   {
-       rehash();
-       repaint();
-   }
+		setFloatable(false);
 
-   public WindowStatusBar(StatusWindow _parent)
-   {
-      contents = new LabelDisplay();
+		setLayout(new BorderLayout());
+		add(contents, BorderLayout.CENTER);
 
-      setFloatable(false);
+		event = new HashMap();
 
-      setLayout(new BorderLayout());
-      add(contents, BorderLayout.CENTER);
+		parent = _parent;
 
-      event = new HashMap();
+		setOpaque(false);
 
-      parent = _parent;
+		setBorder(BorderFactory.createEmptyBorder(0, TextSource.UNIVERSAL_TWEAK, 0, TextSource.UNIVERSAL_TWEAK));
+		// setBorder(null);
 
-      setOpaque(false);
+		rehashValues();
 
-      setBorder(BorderFactory.createEmptyBorder(0, TextSource.UNIVERSAL_TWEAK, 0, TextSource.UNIVERSAL_TWEAK));
-//      setBorder(null); 
+		ClientState.getClientState().addClientStateListener("ui.sbarlines", this);
+		ClientState.getClientState().addClientStateListener("ui.showsbar", this);
+		ClientState.getClientState().addClientStateListener("ui.font", this);
+	}
 
-      rehashValues();
+	@Override
+	public Dimension getPreferredSize() {
+		if (contents.getTotalLines() == 0) {
+			return new Dimension(Integer.MAX_VALUE, 1);
+		}
+		return super.getPreferredSize();
+	}
 
-      ClientState.getClientState().addClientStateListener("ui.sbarlines", this);
-      ClientState.getClientState().addClientStateListener("ui.showsbar", this);
-      ClientState.getClientState().addClientStateListener("ui.font", this);
-   } 
+	public void rehashValues() {
+		if (ClientState.getClientState().isOption("ui.showsbar", true)) {
+			int lines = ClientState.getClientState().getInteger("ui.sbarlines", ClientDefaults.ui_sbarlines);
+			contents.setNumberOfLines(lines);
+		} else {
+			contents.setNumberOfLines(0);
+		}
+	}
 
-   public Dimension getPreferredSize()
-   {
-      if (contents.getTotalLines() == 0)
-      {
-         return new Dimension(Integer.MAX_VALUE, 1);
-      }
-      return super.getPreferredSize();
-   }
+	@Override
+	public void propertyChanged(String var, String parms) {
+		if (var.equals("statusbar")) {
+			repaint();
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					rehashValues();
+					rehash();
+					revalidate();
+					repaint();
+				}
+			});
+		}
+	}
 
-   public void rehashValues()
-   {
-      if (ClientState.getClientState().isOption("ui.showsbar", true))
-      {
-         int lines = ClientState.getClientState().getInteger("ui.sbarlines", ClientDefaults.ui_sbarlines);
-         contents.setNumberOfLines(lines); 
-      }
-      else
-      {
-         contents.setNumberOfLines(0);
-      }
-   }
+	public void rehash() {
+		if (capabilities == null) {
+			return;
+		}
 
-   public void propertyChanged(String var, String parms) 
-   { 
-      if (var.equals("statusbar"))
-      {
-         repaint();
-      }
-      else
-      {
-         SwingUtilities.invokeLater(new Runnable()
-         {
-            public void run()
-            {
-               rehashValues(); 
-               rehash(); 
-               revalidate(); 
-               repaint();
-            }
-         });
-      }
-   }
+		event.put("$query", parent.getQuery());
+		event.put("$window", parent.getName());
 
-   public void rehash()
-   {
-      if (capabilities == null)
-         return;
+		for (int x = 0; x < contents.getTotalLines(); x++) {
+			event.put("$line", "" + x);
 
-      event.put("$query", parent.getQuery());
-      event.put("$window", parent.getName());
+			String lhs = capabilities.getOutputCapabilities().parseSet(event, "SBAR_LEFT");
+			String rhs = capabilities.getOutputCapabilities().parseSet(event, "SBAR_RIGHT");
 
-      for (int x = 0; x < contents.getTotalLines(); x++)
-      {
-         event.put("$line", ""+x);
+			if (lhs == null) {
+				lhs = "";
+			}
+			if (rhs == null) {
+				rhs = "";
+			}
 
-         String lhs = capabilities.getOutputCapabilities().parseSet(event, "SBAR_LEFT");
-         String rhs = capabilities.getOutputCapabilities().parseSet(event, "SBAR_RIGHT");
+			contents.setLine(lhs, rhs, x);
+		}
 
-         if (lhs == null) { lhs = ""; }
-         if (rhs == null) { rhs = ""; }
+		lastRehash = System.currentTimeMillis();
+	}
 
-         contents.setLine(lhs, rhs, x);
-      }
+	@Override
+	public void paint(Graphics g) {
+		if ((System.currentTimeMillis() - lastRehash) > 10000) {
+			rehash(); // force a rehash every 10 seconds regardless...
+		}
 
-      lastRehash = System.currentTimeMillis();
-   }
+		super.paint(g);
+	}
 
-   public void paint(Graphics g)
-   {
-      if ((System.currentTimeMillis() - lastRehash) > 10000)
-      {
-         rehash();  // force a rehash every 10 seconds regardless...
-      }
-
-      super.paint(g);
-   }
-
-/*   protected void finalize()
-   {
-     System.out.println("Finalizing Window Status Bar");
-   } */
+	/*
+	 * protected void finalize() { System.out.println("Finalizing Window Status Bar"); }
+	 */
 }

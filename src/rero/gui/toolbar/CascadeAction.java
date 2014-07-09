@@ -1,25 +1,23 @@
 package rero.gui.toolbar;
 
-import rero.gui.*;
-import rero.gui.mdi.*;
+import java.awt.event.MouseEvent;
 
-import java.awt.event.*;
+import rero.gui.SessionManager;
+import rero.gui.mdi.ClientDesktop;
 
+public class CascadeAction implements ToolAction {
+	@Override
+	public void actionPerformed(MouseEvent ev) {
+		((ClientDesktop) SessionManager.getGlobalCapabilities().getActiveSession().getDesktop()).cascadeWindows();
+	}
 
-public class CascadeAction implements ToolAction
-{
-   public void actionPerformed(MouseEvent ev)
-   {
-      ((ClientDesktop)SessionManager.getGlobalCapabilities().getActiveSession().getDesktop()).cascadeWindows();
-   }
+	@Override
+	public String getDescription() {
+		return "Cascade Windows";
+	}
 
-   public String getDescription()
-   {
-      return "Cascade Windows";
-   }
-
-   public int getIndex()
-   {
-      return 32;
-   }
+	@Override
+	public int getIndex() {
+		return 32;
+	}
 }

@@ -1,133 +1,139 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
+import javax.swing.AbstractListModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
-import rero.config.*;
-import rero.dck.*;
+import rero.config.ClientState;
+import rero.config.StringList;
+import rero.dck.SuperInput;
 
-public class ListInput extends SuperInput implements ActionListener
-{
-   protected InputListModel  model;
-   protected JList           list;
-   protected StringList      data;
+public class ListInput extends SuperInput implements ActionListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected InputListModel model;
+	protected JList list;
+	protected StringList data;
 
-   protected String          desc;
-   protected String         title;
- 
-   public ListInput(String variable, String _title, String _desc, int width, int height)
-   {
-      title = _title;
-      desc  = _desc;
+	protected String desc;
+	protected String title;
 
-      setLayout(new BorderLayout());
-      
-      data  = ClientState.getClientState().getStringList(variable);
-      data.load();
+	public ListInput(String variable, String _title, String _desc, int width, int height) {
+		title = _title;
+		desc = _desc;
 
-      model = new InputListModel();
-      list  = new JList(model);
+		setLayout(new BorderLayout());
 
-      JPanel temp = new JPanel();
-      temp.setPreferredSize(new Dimension(width, height));
+		data = ClientState.getClientState().getStringList(variable);
+		data.load();
 
-      add(temp, BorderLayout.EAST);
+		model = new InputListModel();
+		list = new JList(model);
 
-      temp = new JPanel();
-      temp.setPreferredSize(new Dimension(width, height));
+		JPanel temp = new JPanel();
+		temp.setPreferredSize(new Dimension(width, height));
 
-      add(temp, BorderLayout.WEST);
+		add(temp, BorderLayout.EAST);
 
-      add(new JScrollPane(list), BorderLayout.CENTER);
-   
-      JPanel buttons = new JPanel();
-      buttons.setLayout(new FlowLayout(FlowLayout.CENTER));
+		temp = new JPanel();
+		temp.setPreferredSize(new Dimension(width, height));
 
-      JButton addme = new JButton("Add");
-      addme.setMnemonic('A');
-      addme.addActionListener(this);
-      buttons.add(addme);
+		add(temp, BorderLayout.WEST);
 
-      JButton remme = new JButton("Remove");
-      remme.setMnemonic('R');
-      remme.addActionListener(this);
-      buttons.add(remme);
+		add(new JScrollPane(list), BorderLayout.CENTER);
 
-      add(buttons, BorderLayout.SOUTH);
+		JPanel buttons = new JPanel();
+		buttons.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-      setMinimumSize(new Dimension(width, height));
-   }
+		JButton addme = new JButton("Add");
+		addme.setMnemonic('A');
+		addme.addActionListener(this);
+		buttons.add(addme);
 
-   public void save()
-   {
-      data.save();
-   }
+		JButton remme = new JButton("Remove");
+		remme.setMnemonic('R');
+		remme.addActionListener(this);
+		buttons.add(remme);
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+		add(buttons, BorderLayout.SOUTH);
 
-   public void setAlignWidth(int width)
-   {
-   }
+		setMinimumSize(new Dimension(width, height));
+	}
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	@Override
+	public void save() {
+		data.save();
+	}
 
-   public void refresh()
-   {
-      data.load();
-      model.fireChange();
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-   public void actionPerformed(ActionEvent ev)
-   {
-      if (ev.getActionCommand().equals("Remove"))
-      {
-          if (list.getSelectedIndex() >= 0)
-          {
-             data.getList().remove(list.getSelectedIndex());
-             model.fireChange();
-          }
-      }
+	@Override
+	public void setAlignWidth(int width) {}
 
-      if (ev.getActionCommand().equals("Add"))
-      {
-          String input = JOptionPane.showInputDialog(this, title, desc, JOptionPane.QUESTION_MESSAGE);
-          if (input != null)
-          {
-             data.getList().add(input);
-             model.fireChange();
-          }
-      }
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 
-      notifyParent();
-   }
+	@Override
+	public void refresh() {
+		data.load();
+		model.fireChange();
+	}
 
-   protected class InputListModel extends AbstractListModel
-   {
-      public void fireChange()
-      {
-         model.fireContentsChanged(model, 0, model.getSize());
-      }
+	@Override
+	public void actionPerformed(ActionEvent ev) {
+		if (ev.getActionCommand().equals("Remove")) {
+			if (list.getSelectedIndex() >= 0) {
+				data.getList().remove(list.getSelectedIndex());
+				model.fireChange();
+			}
+		}
 
-      public Object getElementAt(int index)
-      {
-         return (String)data.getList().get(index);
-      }
+		if (ev.getActionCommand().equals("Add")) {
+			String input = JOptionPane.showInputDialog(this, title, desc, JOptionPane.QUESTION_MESSAGE);
+			if (input != null) {
+				data.getList().add(input);
+				model.fireChange();
+			}
+		}
 
-      public int getSize()
-      {
-         return data.getList().size();
-      }
-   }
+		notifyParent();
+	}
+
+	protected class InputListModel extends AbstractListModel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public void fireChange() {
+			model.fireContentsChanged(model, 0, model.getSize());
+		}
+
+		@Override
+		public Object getElementAt(int index) {
+			return data.getList().get(index);
+		}
+
+		@Override
+		public int getSize() {
+			return data.getList().size();
+		}
+	}
 }
-
-

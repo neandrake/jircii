@@ -1,44 +1,40 @@
 package rero.gui.toolbar;
 
-import rero.gui.*;
+import java.awt.event.MouseEvent;
 
-import java.awt.event.*;
-import javax.swing.*;
-import rero.client.*;
-import rero.client.script.*;
-import rero.config.*;
+import javax.swing.JOptionPane;
 
-public class EvilAction implements ToolAction
-{
-   public void actionPerformed(MouseEvent ev)
-   {
-      if (ev.getClickCount() > 2)
-      {
-         boolean   lame = !ClientState.getClientState().isOption("load.lame", false);
-         String message = "";
+import rero.client.DataStructures;
+import rero.client.script.ScriptManager;
+import rero.config.ClientState;
+import rero.gui.SessionManager;
 
-         if (lame)
-         {
-            message = "Hunting for easter eggs?\nRight click on a nick (in the nicklist) and\nlook for an extra surprise.";
-            ((ScriptManager)SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities().getDataStructure(DataStructures.ScriptManager)).loadLameScripts();
-         } 
-         else
-         {
-            message = "Ok, ok, that feature is not all it's cracked up\nto be.  Restart jIRCii to disable the lame menus";
-         }
+public class EvilAction implements ToolAction {
+	@Override
+	public void actionPerformed(MouseEvent ev) {
+		if (ev.getClickCount() > 2) {
+			boolean lame = !ClientState.getClientState().isOption("load.lame", false);
+			String message = "";
 
-         JOptionPane.showMessageDialog(null, message, "Your favorite holiday...", JOptionPane.INFORMATION_MESSAGE);
-         ClientState.getClientState().setOption("load.lame", lame);
-      }
-   }
+			if (lame) {
+				message = "Hunting for easter eggs?\nRight click on a nick (in the nicklist) and\nlook for an extra surprise.";
+				((ScriptManager) SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities().getDataStructure(DataStructures.ScriptManager)).loadLameScripts();
+			} else {
+				message = "Ok, ok, that feature is not all it's cracked up\nto be.  Restart jIRCii to disable the lame menus";
+			}
 
-   public String getDescription()
-   {
-      return null;
-   }
+			JOptionPane.showMessageDialog(null, message, "Your favorite holiday...", JOptionPane.INFORMATION_MESSAGE);
+			ClientState.getClientState().setOption("load.lame", lame);
+		}
+	}
 
-   public int getIndex()
-   {
-      return 2;
-   }
+	@Override
+	public String getDescription() {
+		return null;
+	}
+
+	@Override
+	public int getIndex() {
+		return 2;
+	}
 }

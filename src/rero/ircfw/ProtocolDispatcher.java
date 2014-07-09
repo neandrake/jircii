@@ -1,84 +1,69 @@
 package rero.ircfw;
 
-import rero.ircfw.interfaces.FrameworkConstants;
-import rero.ircfw.interfaces.ChatListener;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
-public class ProtocolDispatcher implements FrameworkConstants
-{
-    protected LinkedList temporary = new LinkedList();
-    protected LinkedList permanent = new LinkedList();       
+import rero.ircfw.interfaces.ChatListener;
+import rero.ircfw.interfaces.FrameworkConstants;
 
-    protected ChatListener internal = null;
+public class ProtocolDispatcher implements FrameworkConstants {
+	protected LinkedList temporary = new LinkedList();
+	protected LinkedList permanent = new LinkedList();
 
-    public void dispatchEvent(HashMap eventDescription)
-    {
-        String eventId = (String)eventDescription.get($EVENT$);
+	protected ChatListener internal = null;
 
-        int rv = ChatListener.EVENT_DONE;
+	public void dispatchEvent(HashMap eventDescription) {
+		String eventId = (String) eventDescription.get($EVENT$);
 
-        if (internal != null && internal.isChatEvent(eventId, eventDescription))
-        {
-            rv = internal.fireChatEvent(eventDescription);
-        }
+		int rv = ChatListener.EVENT_DONE;
 
-        if (rv == ChatListener.EVENT_DONE)
-        {
-            rv = easyDispatch(temporary, eventId, eventDescription);
-        }
+		if (internal != null && internal.isChatEvent(eventId, eventDescription)) {
+			rv = internal.fireChatEvent(eventDescription);
+		}
 
-        if (rv == ChatListener.EVENT_DONE)
-        {
-            rv = easyDispatch(permanent, eventId, eventDescription);
-        }
-    }
+		if (rv == ChatListener.EVENT_DONE) {
+			rv = easyDispatch(temporary, eventId, eventDescription);
+		}
 
-    private int easyDispatch(List listeners, String eventId, HashMap eventDescription)
-    {
-        ChatListener l;
+		if (rv == ChatListener.EVENT_DONE) {
+			rv = easyDispatch(permanent, eventId, eventDescription);
+		}
+	}
 
-        ListIterator iter = listeners.listIterator();
-        while (iter.hasNext())
-        {
-            l = (ChatListener)iter.next();
-   
-            if (l.isChatEvent(eventId, eventDescription))            
-            {
-                int rv = l.fireChatEvent(eventDescription);
+	private int easyDispatch(List listeners, String eventId, HashMap eventDescription) {
+		ChatListener l;
 
-                if ((rv & (ChatListener.REMOVE_LISTENER)) == ChatListener.REMOVE_LISTENER)
-                {
-                    iter.remove();
-                }
+		ListIterator iter = listeners.listIterator();
+		while (iter.hasNext()) {
+			l = (ChatListener) iter.next();
 
-                if ((rv & (ChatListener.EVENT_HALT)) == ChatListener.EVENT_HALT)
-                {
-                    return ChatListener.EVENT_HALT;
-                }
-            }
-        }
-       
-        return ChatListener.EVENT_DONE;
-    }
+			if (l.isChatEvent(eventId, eventDescription)) {
+				int rv = l.fireChatEvent(eventDescription);
 
-    public void addTemporaryListener(ChatListener l)
-    {
-        temporary.addFirst(l);
-    }
+				if ((rv & (ChatListener.REMOVE_LISTENER)) == ChatListener.REMOVE_LISTENER) {
+					iter.remove();
+				}
 
-    public void addChatListener(ChatListener l)
-    {
-        permanent.addFirst(l);
-    }
+				if ((rv & (ChatListener.EVENT_HALT)) == ChatListener.EVENT_HALT) {
+					return ChatListener.EVENT_HALT;
+				}
+			}
+		}
 
-    public void setInternalListener(ChatListener l)
-    {
-        internal = l;
-    }
+		return ChatListener.EVENT_DONE;
+	}
+
+	public void addTemporaryListener(ChatListener l) {
+		temporary.addFirst(l);
+	}
+
+	public void addChatListener(ChatListener l) {
+		permanent.addFirst(l);
+	}
+
+	public void setInternalListener(ChatListener l) {
+		internal = l;
+	}
 }
-
-

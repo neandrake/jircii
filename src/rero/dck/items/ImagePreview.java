@@ -1,192 +1,197 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Iterator;
+import java.util.LinkedList;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JDesktopPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
-import rero.dck.*;
-import rero.gui.background.*;
+import rero.dck.DItem;
+import rero.dck.DParent;
+import rero.gui.background.BackgroundDesktop;
+import rero.gui.background.BackgroundPanel;
+import rero.gui.background.BackgroundToolBar;
 
-import java.util.*;
+public class ImagePreview extends JPanel implements DItem {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected ImageConfigPreview preview;
+	protected JLabel evil;
+	protected int height;
+	protected int width;
 
-public class ImagePreview extends JPanel implements DItem
-{
-   protected ImageConfigPreview preview;
-   protected JLabel evil;
-   protected int    height;
-   protected int    width;
+	public ImagePreview(int _width, int _height) {
+		width = _width;
+		height = _height;
 
-   public ImagePreview(int _width, int _height)
-   {
-      width  = _width;
-      height = _height;
+		setBorder(BorderFactory.createEmptyBorder(0, width, 0, width));
 
-      setBorder(BorderFactory.createEmptyBorder(0, width, 0, width));
+		setLayout(new GridLayout(1, 1));
+		preview = new ImageConfigPreview();
 
-      setLayout(new GridLayout(1, 1));
-      preview = new ImageConfigPreview();
-   
-      add(preview);
-   }
+		add(preview);
+	}
 
-   public void setParent(DParent parent)
-   {
+	@Override
+	public void setParent(DParent parent) {
 
-   }
+	}
 
-   public void setEnabled(boolean b)
-   {
-   }
+	@Override
+	public void setEnabled(boolean b) {}
 
-   public void save()
-   {
+	@Override
+	public void save() {
 
-   }
+	}
 
-   public void refresh()
-   {
-      preview.center();
-   }
+	@Override
+	public void refresh() {
+		preview.center();
+	}
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public void setAlignWidth(int width) {}
 
-   public void setParentVariable(String parent)
-   {
-      
-   }
+	public void setParentVariable(String parent) {
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+	}
 
-   protected LinkedList listeners = new LinkedList();
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 
-   protected void fireEvent(String command)
-   {
-      ActionEvent ev = new ActionEvent(this, 0, command);
+	protected LinkedList listeners = new LinkedList();
 
-      Iterator i = listeners.iterator();
-      while (i.hasNext())
-      {
-         ActionListener temp = (ActionListener)i.next();
-         temp.actionPerformed(ev);
-      }
-   }
+	protected void fireEvent(String command) {
+		ActionEvent ev = new ActionEvent(this, 0, command);
 
-   public void addActionListener(ActionListener l) { listeners.add(l); }
+		Iterator i = listeners.iterator();
+		while (i.hasNext()) {
+			ActionListener temp = (ActionListener) i.next();
+			temp.actionPerformed(ev);
+		}
+	}
 
-   protected class ImageConfigPreview extends JPanel 
-   {
-      protected BackgroundPanel   window;
-      protected JPanel            wparent;
-      protected JDesktopPane      desktop;
-      protected BackgroundToolBar toolbar;
+	public void addActionListener(ActionListener l) {
+		listeners.add(l);
+	}
 
-      public ImageConfigPreview()
-      {
-         setLayout(new BorderLayout());
-         setBorder(BorderFactory.createEtchedBorder());
+	protected class ImageConfigPreview extends JPanel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		protected BackgroundPanel window;
+		protected JPanel wparent;
+		protected JDesktopPane desktop;
+		protected BackgroundToolBar toolbar;
 
-         desktop = new JDesktopPane();
+		public ImageConfigPreview() {
+			setLayout(new BorderLayout());
+			setBorder(BorderFactory.createEtchedBorder());
 
-         BackgroundDesktop wallpaper = new BackgroundDesktop(desktop);
-         wallpaper.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-         desktop.add(wallpaper, new Integer(Integer.MIN_VALUE));
+			desktop = new JDesktopPane();
 
-         add(desktop, BorderLayout.CENTER);
+			BackgroundDesktop wallpaper = new BackgroundDesktop(desktop);
+			wallpaper.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+			desktop.add(wallpaper, new Integer(Integer.MIN_VALUE));
 
-         window = new BackgroundPanel();
+			add(desktop, BorderLayout.CENTER);
 
-         window.setLayout(new BorderLayout());
+			window = new BackgroundPanel();
 
-         JPanel bottom = new JPanel();
-         bottom.setLayout(new BorderLayout());
-         bottom.setPreferredSize(new Dimension(0, 30));
-         bottom.setOpaque(false);
+			window.setLayout(new BorderLayout());
 
-         toolbar = new BackgroundToolBar();
-         toolbar.setPreferredSize(new Dimension(0, 15));
-         toolbar.setFloatable(false);
-         bottom.add(toolbar, BorderLayout.NORTH);
+			JPanel bottom = new JPanel();
+			bottom.setLayout(new BorderLayout());
+			bottom.setPreferredSize(new Dimension(0, 30));
+			bottom.setOpaque(false);
 
-         window.add(bottom, BorderLayout.SOUTH);
+			toolbar = new BackgroundToolBar();
+			toolbar.setPreferredSize(new Dimension(0, 15));
+			toolbar.setFloatable(false);
+			bottom.add(toolbar, BorderLayout.NORTH);
 
-         wparent = new JPanel();
-         wparent.setLayout(new BorderLayout());
-         wparent.setBorder(BorderFactory.createEtchedBorder());
-         wparent.add(window, BorderLayout.CENTER);
+			window.add(bottom, BorderLayout.SOUTH);
 
-         SwingUtilities.invokeLater(new Runnable()
-         {
-            public void run() 
-            { 
-               desktop.add(wparent);
-               center(); 
-               validate();
-            }
-         });
+			wparent = new JPanel();
+			wparent.setLayout(new BorderLayout());
+			wparent.setBorder(BorderFactory.createEtchedBorder());
+			wparent.add(window, BorderLayout.CENTER);
 
-         PreviewMouseListener listener = new PreviewMouseListener();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					desktop.add(wparent);
+					center();
+					validate();
+				}
+			});
 
-         window.addMouseListener(listener);
-         toolbar.addMouseListener(listener);
-         desktop.addMouseListener(listener);
-      }
+			PreviewMouseListener listener = new PreviewMouseListener();
 
-      public void center()
-      {
-         int width, height, x, y, dw, dh;
+			window.addMouseListener(listener);
+			toolbar.addMouseListener(listener);
+			desktop.addMouseListener(listener);
+		}
 
-         dw = desktop.getBounds().width;
-         dh = desktop.getBounds().height;
+		public void center() {
+			int width, height, x, y, dw, dh;
 
-         width  = dw - 40;
-         height = dh - 40;
+			dw = desktop.getBounds().width;
+			dh = desktop.getBounds().height;
 
-         x = 20;
-         y = 20;
+			width = dw - 40;
+			height = dh - 40;
 
-         wparent.setBounds(x, y, width, height);
-      }
+			x = 20;
+			y = 20;
 
-      public Dimension getPreferredSize()
-      {
-         return new Dimension(0, height);
-      }
+			wparent.setBounds(x, y, width, height);
+		}
 
-      public Dimension getMinimumSize()
-      {
-         return getPreferredSize();
-      }
+		@Override
+		public Dimension getPreferredSize() {
+			return new Dimension(0, height);
+		}
 
-      protected class PreviewMouseListener extends MouseAdapter
-      {
-         public void mousePressed(MouseEvent ev)
-         {
-            if (ev.getSource() == window)
-            {
-               fireEvent("window");
-            }
-            else if (ev.getSource() == toolbar)
-            {
-               fireEvent("statusbar");
-            }
-            else if (ev.getSource() == desktop)
-            {
-               fireEvent("desktop");
-            }
-         }
-      }
-   }
+		@Override
+		public Dimension getMinimumSize() {
+			return getPreferredSize();
+		}
+
+		protected class PreviewMouseListener extends MouseAdapter {
+			@Override
+			public void mousePressed(MouseEvent ev) {
+				if (ev.getSource() == window) {
+					fireEvent("window");
+				} else if (ev.getSource() == toolbar) {
+					fireEvent("statusbar");
+				} else if (ev.getSource() == desktop) {
+					fireEvent("desktop");
+				}
+			}
+		}
+	}
 }
-

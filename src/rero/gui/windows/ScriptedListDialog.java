@@ -1,166 +1,148 @@
 package rero.gui.windows;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
 
-import java.awt.*;
-import java.awt.event.*;
+import rero.gui.toolkit.GeneralListModel;
+import rero.script.ScriptCore;
+import rero.util.ClientUtils;
+import sleep.runtime.Scalar;
+import text.AttributedString;
+import text.TextSource;
+// sorted JTable code...
 
-import java.util.*;
-import rero.util.*;
+public class ScriptedListDialog extends GeneralListDialog {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-import contrib.javapro.*;  // sorted JTable code...
+	public ScriptedListDialog(String title, String hook, Object data, LinkedList cols) {
+		super(title, hook, new ScriptedListModel(cols, data));
+	}
 
-import rero.ircfw.interfaces.*;
+	public void refreshData() {
+		model.fireTableDataChanged();
+	}
 
-import rero.config.*;
-import rero.client.*;
+	@Override
+	public void init() {
+		((ScriptedListModel) model).install(popupHook, capabilities.getScriptCore());
+	}
 
-import rero.gui.*;
-import rero.gui.windows.*;
-import rero.gui.toolkit.*;
+	public static class ScriptedCompare implements Comparator {
+		private int col;
+		private boolean rev;
 
-import text.*;
+		public ScriptedCompare(int column, boolean reverse) {
+			rev = reverse;
+			col = column;
+		}
 
-import rero.dcc.*;
-import rero.client.output.*;
-import rero.util.*;
+		@Override
+		public int compare(Object a, Object b) {
+			if (rev) {
+				Object c = b;
+				b = a;
+				a = c;
+			}
 
-import sleep.bridges.*;
-import sleep.runtime.*;
-import rero.script.*;
+			String[] sa = a.toString().toLowerCase().split("\t");
+			String[] sb = b.toString().toLowerCase().split("\t");
 
-public class ScriptedListDialog extends GeneralListDialog
-{
-   public ScriptedListDialog(String title, String hook, Object data, LinkedList cols)
-   {
-      super(title, hook, new ScriptedListModel(cols, data));
-   }
+			try {
+				int na = Integer.parseInt(sa[col]);
+				int nb = Integer.parseInt(sb[col]);
 
-   public void refreshData()
-   {
-      model.fireTableDataChanged();
-   }
+				return na - nb;
+			} catch (Exception ex) {}
 
-   public void init()
-   {
-      ((ScriptedListModel)model).install(popupHook, capabilities.getScriptCore());
-   }
+			return sa[col].compareTo(sb[col]);
+		}
+	}
 
-   public static class ScriptedCompare implements Comparator
-   {
-      private int     col;
-      private boolean rev;
+	private static class ScriptedListModel extends GeneralListModel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private Scalar data;
+		private LinkedList cols;
+		private ScriptCore script;
+		private String popupHook;
 
-      public ScriptedCompare(int column, boolean reverse)
-      {
-         rev = reverse;
-         col = column;
-      }
+		public void install(String popup, ScriptCore s) {
+			script = s;
+			popupHook = popup;
+		}
 
-      public int compare(Object a, Object b)
-      {
-         if (rev)
-         {
-            Object c = b;
-            b = a;
-            a = c;
-         }
+		public ScriptedListModel(LinkedList headers, Object scalar) {
+			cols = headers;
 
-         String[] sa = a.toString().toLowerCase().split("\t");
-         String[] sb = b.toString().toLowerCase().split("\t");
-         
-         try
-         {
-            int na = Integer.parseInt(sa[col]);
-            int nb = Integer.parseInt(sb[col]);
+			data = (Scalar) scalar;
+		}
 
-            return na - nb;
-         } 
-         catch (Exception ex) { }
-       
-         return sa[col].compareTo(sb[col]);
-      }
-   }
+		@Override
+		public void sortColumn(int col, boolean ascending) {
+			/*
+			 * String function = "&" + popupHook + "_sort";
+			 * 
+			 * Stack temp = new Stack(); temp.push(SleepUtils.getScalar((ascending ? 1 : 0)));
+			 * temp.push(SleepUtils.getScalar(col));
+			 * 
+			 * script.callFunction(function, temp);
+			 */
 
-   private static class ScriptedListModel extends GeneralListModel
-   {
-      private Scalar          data;
-      private LinkedList      cols;
-      private ScriptCore      script;
-      private String          popupHook;
+			data.getArray().sort(new ScriptedCompare(col, ascending));
+			fireTableDataChanged();
+		}
 
-      public void install(String popup, ScriptCore s) { script = s; popupHook = popup; }
+		@Override
+		public HashMap getEventHashMap(int row) {
+			return ClientUtils.getEventHashMap(row + "", "");
+		}
 
-      public ScriptedListModel(LinkedList headers, Object scalar)
-      {
-         cols = headers;
+		@Override
+		public int getRowCount() {
+			return data.getArray().size();
+		}
 
-         data = (Scalar)scalar;
-      }
+		@Override
+		public int getColumnCount() {
+			return cols.size();
+		}
 
-      public void sortColumn(int col, boolean ascending) 
-      {
-/*         String function = "&" + popupHook + "_sort";
+		@Override
+		public int getColumnWidth(int col) {
+			return (int) (TextSource.fontMetrics.stringWidth(cols.get(col).toString()) * 1.5);
+		}
 
-         Stack temp = new Stack();
-         temp.push(SleepUtils.getScalar((ascending ? 1 : 0)));
-         temp.push(SleepUtils.getScalar(col));
+		@Override
+		public String getColumnName(int col) {
+			return cols.get(col).toString();
+		}
 
-         script.callFunction(function, temp); */
+		@Override
+		public Object getValueAt(int row, int col) {
+			if (row < getRowCount() && col < getColumnCount()) {
+				String temp = data.getArray().getAt(row).toString();
+				String blah[] = temp.split("\t");
 
-         data.getArray().sort(new ScriptedCompare(col, ascending));
-         fireTableDataChanged();
-      }
+				if (col < blah.length) {
+					AttributedString tempa = AttributedString.CreateAttributedString(blah[col]);
+					tempa.assignWidths();
 
-      public HashMap getEventHashMap(int row) 
-      { 
-         return ClientUtils.getEventHashMap(row+"", ""); 
-      }
+					return tempa;
+				}
+			}
 
-      public int getRowCount()
-      {
-         return data.getArray().size();
-      }
+			return null;
+		}
 
-      public int getColumnCount()
-      {
-         return cols.size();
-      }
-
-      public int getColumnWidth(int col)
-      {
-         return (int)(TextSource.fontMetrics.stringWidth(cols.get(col).toString()) * 1.5);
-      }
-
-      public String getColumnName(int col)
-      {
-         return cols.get(col).toString();
-      }
-
-      public Object getValueAt(int row, int col)
-      {
-         if (row < getRowCount() && col < getColumnCount())
-         {
-            String temp = data.getArray().getAt(row).toString();
-            String blah[] = temp.split("\t");
-
-            if (col < blah.length)
-            {
-               AttributedString tempa = AttributedString.CreateAttributedString(blah[col]);
-               tempa.assignWidths();
- 
-               return tempa;
-            }
-         }
-
-         return null;
-      }
-
-      public boolean isSortable(int col)
-      {
-         return true;
-      }
-   }
+		@Override
+		public boolean isSortable(int col) {
+			return true;
+		}
+	}
 }

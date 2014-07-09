@@ -1,9 +1,9 @@
 package rero.bridges.menu;
 
-import javax.swing.*;
+import javax.swing.JMenuItem;
 
-public interface MenuBridgeParent
-{
-   public void addSeparator();
-   public JMenuItem add(JMenuItem menuItem);
+public interface MenuBridgeParent {
+	public void addSeparator();
+
+	public JMenuItem add(JMenuItem menuItem);
 }

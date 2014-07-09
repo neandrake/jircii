@@ -1,162 +1,149 @@
 package rero.dck.items;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
-import java.io.*;
+import rero.config.ClientState;
+import rero.dck.SuperInput;
 
-import rero.dck.*;
-import rero.config.*;
+public class FontInput extends SuperInput implements ItemListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected JComboBox name;
+	protected JComboBox style;
+	protected JComboBox size;
 
-public class FontInput extends SuperInput implements ItemListener
-{
-   protected JComboBox  name;
-   protected JComboBox  style;
-   protected JComboBox  size;
+	protected JLabel preview;
 
-   protected JLabel     preview;
+	protected Font value;
 
-   protected Font      value;
+	protected boolean listing = true;
 
-   protected boolean   listing = true;
+	public static String funny() {
+		String taglines[] = { "The quick brown fox jumped over the lazy coder", "Fat butane, grubbin' on French fries", "Sun sucks!@", "His name was Robert Paulson", "I always forget some mundate detail!" };
+		int r = ((int) System.currentTimeMillis() / 1000) % taglines.length;
+		return taglines[Math.abs(r)];
+	}
 
-   public static String funny()
-   {
-      String taglines[] = {
-         "The quick brown fox jumped over the lazy coder",
-         "Fat butane, grubbin' on French fries",
-         "Sun sucks!@",
-	 "His name was Robert Paulson",
-	 "I always forget some mundate detail!"
-     };
-     int r = ((int)System.currentTimeMillis() / 1000) % taglines.length;
-     return taglines[Math.abs(r)];
-   }
+	public FontInput(String _variable, Font _value) {
+		variable = _variable;
 
-   public FontInput(String _variable, Font _value)
-   {
-      variable = _variable;
+		value = _value;
 
-      value = _value;
+		setLayout(new BorderLayout());
 
-      setLayout(new BorderLayout()); 
+		JPanel top = new JPanel();
+		top.setLayout(new BorderLayout());
 
-      JPanel top = new JPanel();
-      top.setLayout(new BorderLayout());
-      
-      JPanel fonts = new JPanel();
-      fonts.setLayout(new FlowLayout(FlowLayout.CENTER));
-      
-      name  = new JComboBox();
-      name.setPrototypeDisplayValue("Times New Roman.");
-      name.addItem("Loading fonts...");
+		JPanel fonts = new JPanel();
+		fonts.setLayout(new FlowLayout(FlowLayout.CENTER));
 
-      style = new JComboBox(new String[] { "Plain", "Italic", "Bold" });      
-      size  = new JComboBox(new String[] { "5", "8", "9","10", "11", "12", "13", "14", "15", "16", "17", "18", "20", "22", "26", "32" });
+		name = new JComboBox();
+		name.setPrototypeDisplayValue("Times New Roman.");
+		name.addItem("Loading fonts...");
 
-      name.addItemListener(this);
-      style.addItemListener(this);
-      size.addItemListener(this);
- 
-      fonts.add(name);
-      fonts.add(style);
-      fonts.add(size);
+		style = new JComboBox(new String[] { "Plain", "Italic", "Bold" });
+		size = new JComboBox(new String[] { "5", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "20", "22", "26", "32" });
 
-      top.add(fonts, BorderLayout.CENTER);
+		name.addItemListener(this);
+		style.addItemListener(this);
+		size.addItemListener(this);
 
-      preview = new JLabel(funny());
-//      preview.setEditable(false);
-      preview.setOpaque(false);
-//      preview.setText(funny());
+		fonts.add(name);
+		fonts.add(style);
+		fonts.add(size);
 
-      JPanel bottom = new JPanel();
-      bottom.setLayout(new FlowLayout(FlowLayout.CENTER));
-      bottom.add(preview);      
+		top.add(fonts, BorderLayout.CENTER);
 
-      add(top,    BorderLayout.NORTH);
-      add(bottom, BorderLayout.CENTER);
-   }
+		preview = new JLabel(funny());
+		// preview.setEditable(false);
+		preview.setOpaque(false);
+		// preview.setText(funny());
 
-   public void save()
-   {
-      ClientState.getClientState().setFont(getVariable(), preview.getFont());
-   }
+		JPanel bottom = new JPanel();
+		bottom.setLayout(new FlowLayout(FlowLayout.CENTER));
+		bottom.add(preview);
 
-   public int getEstimatedWidth()
-   {
-      return 0;
-   }
+		add(top, BorderLayout.NORTH);
+		add(bottom, BorderLayout.CENTER);
+	}
 
-   public void setAlignWidth(int width)
-   {
-   }
+	@Override
+	public void save() {
+		ClientState.getClientState().setFont(getVariable(), preview.getFont());
+	}
 
-   public void itemStateChanged(ItemEvent ev)
-   {
-      Font f = Font.decode(name.getSelectedItem()+"-"+style.getSelectedItem().toString().toUpperCase()+"-"+size.getSelectedItem());
+	@Override
+	public int getEstimatedWidth() {
+		return 0;
+	}
 
-      preview.setFont(f);
-      preview.revalidate();
+	@Override
+	public void setAlignWidth(int width) {}
 
-      notifyParent();
-   }
+	@Override
+	public void itemStateChanged(ItemEvent ev) {
+		Font f = Font.decode(name.getSelectedItem() + "-" + style.getSelectedItem().toString().toUpperCase() + "-" + size.getSelectedItem());
 
-   public JComponent getComponent()
-   {
-      return this;
-   }
+		preview.setFont(f);
+		preview.revalidate();
 
-   public void refresh()
-   {
-      if (!listing)
-      {
-         Font f = ClientState.getClientState().getFont(getVariable(), value);
+		notifyParent();
+	}
 
-         name.setSelectedItem(f.getFamily());
-         size.setSelectedItem(f.getSize()+"");
+	@Override
+	public JComponent getComponent() {
+		return this;
+	}
 
-         if (f.isBold())
-         {
-            style.setSelectedItem("Bold");
-         }
-         else if (f.isItalic())
-         {
-            style.setSelectedItem("Italic");
-         }
-         else
-         {
-            style.setSelectedItem("Plain");
-         }
+	@Override
+	public void refresh() {
+		if (!listing) {
+			Font f = ClientState.getClientState().getFont(getVariable(), value);
 
-         preview.setFont(f);
-         preview.validate();
-      }
-      else
-      {
-      //
-      // obtaining all of the fonts from the system is pretty damned slow so we're going to do it in a thread.
-      //
-         SwingUtilities.invokeLater(new Runnable()
-         {
-             public void run()
-             {
-                String fonts[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-                for (int x = 0; x < fonts.length; x++)
-                {
-                   name.addItem(fonts[x]);
-                }
+			name.setSelectedItem(f.getFamily());
+			size.setSelectedItem(f.getSize() + "");
 
-                name.removeItemAt(0);             
-                listing = false;
-                refresh();
-                revalidate();
-             } 
-         });
-      }
-   }
+			if (f.isBold()) {
+				style.setSelectedItem("Bold");
+			} else if (f.isItalic()) {
+				style.setSelectedItem("Italic");
+			} else {
+				style.setSelectedItem("Plain");
+			}
+
+			preview.setFont(f);
+			preview.validate();
+		} else {
+			//
+			// obtaining all of the fonts from the system is pretty damned slow so we're going to do it in a thread.
+			//
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					String fonts[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+					for (int x = 0; x < fonts.length; x++) {
+						name.addItem(fonts[x]);
+					}
+
+					name.removeItemAt(0);
+					listing = false;
+					refresh();
+					revalidate();
+				}
+			});
+		}
+	}
 }
-
-

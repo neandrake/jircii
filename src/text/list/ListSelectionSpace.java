@@ -1,162 +1,135 @@
 package text.list;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.event.*;
-import text.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.util.Iterator;
+import java.util.LinkedList;
 
-import java.util.*;
+import javax.swing.event.MouseInputAdapter;
 
-public class ListSelectionSpace extends MouseInputAdapter
-{
-    protected ListData data;
-    protected ListDisplay display;
+import text.ListDisplay;
+import text.TextSource;
 
-    protected int         start;
-  
-    public ListSelectionSpace(ListDisplay _display, ListData _data)
-    {
-        data = _data;
-        display = _display;
-    }
+public class ListSelectionSpace extends MouseInputAdapter {
+	protected ListData data;
+	protected ListDisplay display;
 
-    public void clearSelections()
-    {
-        Iterator i = data.dataIterator();
-        while (i.hasNext())
-        {
-            ListElement element = (ListElement)i.next();
-            element.setSelected(false);
-        }
-    }
+	protected int start;
 
-    /** returns the list element for the *primary* selected element */
-    public ListElement getSelectedElement()
-    {
-        ListElement temp = data.getElementAtLocation(start);
-        if (temp != null && temp.isSelected())
-        {
-           return temp;
-        }
- 
-        return null;
-    }
+	public ListSelectionSpace(ListDisplay _display, ListData _data) {
+		data = _data;
+		display = _display;
+	}
 
-    /** returns a linked list of all the selected elements (in order from top of the list to the bottom) */
-    public LinkedList getSelectedElements()
-    {
-        LinkedList selection = new LinkedList();
+	public void clearSelections() {
+		Iterator i = data.dataIterator();
+		while (i.hasNext()) {
+			ListElement element = (ListElement) i.next();
+			element.setSelected(false);
+		}
+	}
 
-        Iterator i = data.dataIterator();
-        while (i.hasNext())
-        {
-            ListElement element = (ListElement)i.next();
-            if (element.isSelected())
-            {
-               selection.add(element);
-            }
-        }
+	/** returns the list element for the *primary* selected element */
+	public ListElement getSelectedElement() {
+		ListElement temp = data.getElementAtLocation(start);
+		if (temp != null && temp.isSelected()) {
+			return temp;
+		}
 
-        return selection;
-    }
+		return null;
+	}
 
-    public void mousePressed(MouseEvent ev)
-    {
-        if (ev.getButton() == MouseEvent.BUTTON1 && !ev.isPopupTrigger() && !(ev.isShiftDown() && ev.isControlDown()) )
-        {
-           if ((ev.getModifiers() & MouseEvent.CTRL_MASK) == MouseEvent.CTRL_MASK ||
-               (ev.getModifiers() & MouseEvent.ALT_MASK) == MouseEvent.ALT_MASK)
-           {
-              ListElement temp = data.getElementAtLocation(ev.getY());
+	/** returns a linked list of all the selected elements (in order from top of the list to the bottom) */
+	public LinkedList getSelectedElements() {
+		LinkedList selection = new LinkedList();
 
-              if (temp != null)
-              {
-                 if (!temp.isSelected())
-                 {
-                    start = ev.getY();
-                 }
-                 temp.setSelected(!temp.isSelected());
-                 display.repaint();
-              }
-           }
-           else if ((ev.getModifiers() & MouseEvent.SHIFT_MASK) == MouseEvent.SHIFT_MASK)
-           {
-              selectRange(ev);
-           }
-           else
-           {
-              start = ev.getY();
-              clearSelections();
+		Iterator i = data.dataIterator();
+		while (i.hasNext()) {
+			ListElement element = (ListElement) i.next();
+			if (element.isSelected()) {
+				selection.add(element);
+			}
+		}
 
-              setSelectedAt(start, true);
-              display.repaint();
-           }
-        }
-    }
+		return selection;
+	}
 
-    public void mouseReleased(MouseEvent ev)
-    {
-    }
+	@Override
+	public void mousePressed(MouseEvent ev) {
+		if (ev.getButton() == MouseEvent.BUTTON1 && !ev.isPopupTrigger() && !(ev.isShiftDown() && ev.isControlDown())) {
+			if ((ev.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK || (ev.getModifiers() & InputEvent.ALT_MASK) == InputEvent.ALT_MASK) {
+				ListElement temp = data.getElementAtLocation(ev.getY());
 
-    public void mouseClicked(MouseEvent ev)
-    {
-    }
+				if (temp != null) {
+					if (!temp.isSelected()) {
+						start = ev.getY();
+					}
+					temp.setSelected(!temp.isSelected());
+					display.repaint();
+				}
+			} else if ((ev.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK) {
+				selectRange(ev);
+			} else {
+				start = ev.getY();
+				clearSelections();
 
-    public void mouseDragged(MouseEvent ev)
-    {
-       if (ev.getButton() == MouseEvent.BUTTON1_MASK || (ev.getModifiers() & MouseEvent.BUTTON1_MASK) == MouseEvent.BUTTON1_MASK)
-       {
-          selectRange(ev);
-       }
-    }
+				setSelectedAt(start, true);
+				display.repaint();
+			}
+		}
+	}
 
-    private void selectRange(MouseEvent ev)
-    {
-       clearSelections();
+	@Override
+	public void mouseReleased(MouseEvent ev) {}
 
-       boolean repaint = false;
+	@Override
+	public void mouseClicked(MouseEvent ev) {}
 
-       int _height = (TextSource.fontMetrics.getHeight() + 2);
+	@Override
+	public void mouseDragged(MouseEvent ev) {
+		if (ev.getButton() == InputEvent.BUTTON1_MASK || (ev.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
+			selectRange(ev);
+		}
+	}
 
-       if (start < ev.getY())
-       {
-          int temp = start;
-          while (temp < ev.getY())
-          {
-             setSelectedAt(temp, true);
-             temp += _height;
-          }
-       }
-       else
-       {
-          int temp = ev.getY();
-          while (temp < start)
-          {
-             setSelectedAt(temp, true);
-             temp += _height;
-          }
-          setSelectedAt(start, true);
-       }
+	private void selectRange(MouseEvent ev) {
+		clearSelections();
 
-       display.repaint();
-    }
+		boolean repaint = false;
 
-    public boolean setSelectedAt(int pixely, boolean selected)
-    {
-       ListElement temp = data.getElementAtLocation(pixely);
+		int _height = (TextSource.fontMetrics.getHeight() + 2);
 
-       if (temp != null && temp.isSelected() != selected)
-       {
-          temp.setSelected(selected);
-          return true;
-       }
-       return false;
-    }
+		if (start < ev.getY()) {
+			int temp = start;
+			while (temp < ev.getY()) {
+				setSelectedAt(temp, true);
+				temp += _height;
+			}
+		} else {
+			int temp = ev.getY();
+			while (temp < start) {
+				setSelectedAt(temp, true);
+				temp += _height;
+			}
+			setSelectedAt(start, true);
+		}
 
-    public int translateToLineNumber(int pixely)
-    {
-       int _height = (TextSource.fontMetrics.getHeight() + 2);
-       int lineNo = ((pixely - (pixely % _height)) / _height) + data.getValue();
-       return lineNo;
-    }
+		display.repaint();
+	}
+
+	public boolean setSelectedAt(int pixely, boolean selected) {
+		ListElement temp = data.getElementAtLocation(pixely);
+
+		if (temp != null && temp.isSelected() != selected) {
+			temp.setSelected(selected);
+			return true;
+		}
+		return false;
+	}
+
+	public int translateToLineNumber(int pixely) {
+		int _height = (TextSource.fontMetrics.getHeight() + 2);
+		int lineNo = ((pixely - (pixely % _height)) / _height) + data.getValue();
+		return lineNo;
+	}
 }

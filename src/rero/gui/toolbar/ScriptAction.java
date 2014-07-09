@@ -1,23 +1,22 @@
 package rero.gui.toolbar;
 
-import rero.gui.*;
+import java.awt.event.MouseEvent;
 
-import java.awt.event.*;
+import rero.gui.SessionManager;
 
-public class ScriptAction implements ToolAction
-{
-   public void actionPerformed(MouseEvent ev)
-   {
-      SessionManager.getGlobalCapabilities().showOptionDialog("Script Manager");
-   }
+public class ScriptAction implements ToolAction {
+	@Override
+	public void actionPerformed(MouseEvent ev) {
+		SessionManager.getGlobalCapabilities().showOptionDialog("Script Manager");
+	}
 
-   public String getDescription()
-   {
-      return "Script Manager";
-   }
+	@Override
+	public String getDescription() {
+		return "Script Manager";
+	}
 
-   public int getIndex()
-   {
-      return 10;
-   }
+	@Override
+	public int getIndex() {
+		return 10;
+	}
 }

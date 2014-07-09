@@ -1,194 +1,192 @@
 package rero.dialogs;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
+import javax.swing.DefaultComboBoxModel;
 
-import java.util.*;
-import rero.config.*;
+import rero.config.ClientState;
+import rero.dck.DMain;
+import rero.dck.DParent;
+import rero.dck.DTab;
+import rero.dck.items.ImageInput;
+import rero.dck.items.ImagePreview;
+import rero.dck.items.NormalInput;
+import rero.dck.items.SelectInput;
+import rero.dck.items.TabbedInput;
 
-import rero.dck.items.*;
-import rero.dck.*;
+public class ImageDialog extends DMain implements DParent, ActionListener {
+	protected String current = "desktop";
+	protected TabbedInput tabs;
+	protected ImagePreview preview;
+	protected NormalInput label;
 
-public class ImageDialog extends DMain implements DParent, ActionListener
-{
-   protected String current = "desktop";
-   protected TabbedInput  tabs;
-   protected ImagePreview preview;
-   protected NormalInput  label;
+	protected void setupLabel() {
+		label.setText("<html><b><u>" + current.substring(0, 1).toUpperCase() + current.substring(1, current.length()) + "</u></b>: background properties</html>");
+	}
 
-   protected void setupLabel()
-   {
-      label.setText("<html><b><u>" + current.substring(0, 1).toUpperCase() + current.substring(1, current.length()) + "</u></b>: background properties</html>");
-   }
+	@Override
+	public void actionPerformed(ActionEvent ev) {
+		tabs.save();
+		current = ev.getActionCommand();
 
-   public void actionPerformed(ActionEvent ev)
-   {
-      tabs.save();
-      current = ev.getActionCommand();
+		setupLabel();
 
-      setupLabel();
+		tabs.refresh();
+		preview.refresh();
+		preview.repaint();
+	}
 
-      tabs.refresh();
-      preview.refresh();
-      preview.repaint();
-   }
+	@Override
+	public String getTitle() {
+		return "Backgrounds";
+	}
 
-   public String getTitle()
-   {
-      return "Backgrounds";
-   }
+	@Override
+	public void notifyParent(String variable) {
+		ClientState.getClientState().fireChange(current);
+		preview.repaint();
 
-   public void notifyParent(String variable)
-   {
-      ClientState.getClientState().fireChange(current); 
-      preview.repaint();
+		if (variable.equals(current + ".bgtype")) {
+			tabs.refresh();
+		}
+	}
 
-      if (variable.equals(current + ".bgtype"))
-         tabs.refresh();
-   }
+	@Override
+	public String getVariable(String variable) {
+		return current + "." + variable;
+	}
 
-   public String getVariable(String variable)
-   {
-      return current + "." + variable;
-   }
+	@Override
+	public String getDescription() {
+		return "Client Background Images";
+	}
 
-   public String getDescription()
-   {
-      return "Client Background Images";
-   }
+	@Override
+	public void setupDialog() {
+		addBlankSpace();
+		preview = (ImagePreview) addOther(new ImagePreview(35, 115));
 
-   public void setupDialog()
-   {
-      addBlankSpace();
-      preview = (ImagePreview)addOther(new ImagePreview(35, 115));  
+		label = addLabelNormal("Editing Statusbar Options", 5);
+		setupLabel();
 
-      label = (NormalInput)addLabelNormal("Editing Statusbar Options", 5);
-      setupLabel();
+		tabs = addTabbedInput();
+		tabs.addTab(new BackgroundSetup());
+		tabs.addTab(new EditColor());
+		tabs.addTab(new TransformImage());
+		tabs.addTab(new EditTint());
 
-      tabs = addTabbedInput();
-      tabs.addTab(new BackgroundSetup());
-      tabs.addTab(new EditColor());
-      tabs.addTab(new TransformImage());
-      tabs.addTab(new EditTint());
+		tabs.setParent(this);
+		preview.addActionListener(this);
+	}
 
-      tabs.setParent(this);
-      preview.addActionListener(this);
-   }
-   
-   protected class EditTint extends DTab
-   {
-      public String getTitle() 
-      { 
-         return "Tint"; 
-      }
+	protected class EditTint extends DTab {
+		@Override
+		public String getTitle() {
+			return "Tint";
+		}
 
-      public boolean isEnabled()
-      {
-         int type = ClientState.getClientState().getInteger(current + ".bgtype", 0);
-         return type == 2 || type == 3;
-      }
- 
-      public String getDescription() 
-      { 
-         return "Adjust transparency settings"; 
-      }
+		@Override
+		public boolean isEnabled() {
+			int type = ClientState.getClientState().getInteger(current + ".bgtype", 0);
+			return type == 2 || type == 3;
+		}
 
-      public void setupDialog()
-      {
-         addFloatInput("tint", 0f, "Alpha Tint: ");
-      }
-   }
+		@Override
+		public String getDescription() {
+			return "Adjust transparency settings";
+		}
 
-   protected class EditColor extends DTab
-   {
-      public String getTitle() 
-      { 
-         return "Setup"; 
-      }
+		@Override
+		public void setupDialog() {
+			addFloatInput("tint", 0f, "Alpha Tint: ");
+		}
+	}
 
-      public boolean isEnabled()
-      {
-         return ClientState.getClientState().getInteger(current + ".bgtype", 0) != 0;
-      }
+	protected class EditColor extends DTab {
+		@Override
+		public String getTitle() {
+			return "Setup";
+		}
 
-      public String getDescription() 
-      { 
-         return "Select color and image for background"; 
-      }
+		@Override
+		public boolean isEnabled() {
+			return ClientState.getClientState().getInteger(current + ".bgtype", 0) != 0;
+		}
 
-      public void setupDialog()
-      {
-         addOther(new ImageInput("image", "", "Background Image: ", 'I'));
-         addColorInput("color", Color.black, "Select Background Color", 'c');
-      }
-   }
+		@Override
+		public String getDescription() {
+			return "Select color and image for background";
+		}
 
-   protected class TransformImage extends DTab
-   {
-      public String getTitle() 
-      { 
-         return "Transform"; 
-      }
+		@Override
+		public void setupDialog() {
+			addOther(new ImageInput("image", "", "Background Image: ", 'I'));
+			addColorInput("color", Color.black, "Select Background Color", 'c');
+		}
+	}
 
-      public boolean isEnabled()
-      {
-         return ClientState.getClientState().getInteger(current + ".bgtype", 0) == 3;
-      }
+	protected class TransformImage extends DTab {
+		@Override
+		public String getTitle() {
+			return "Transform";
+		}
 
-      public String getDescription() 
-      { 
-         return "Options for selected background image"; 
-      }
+		@Override
+		public boolean isEnabled() {
+			return ClientState.getClientState().getInteger(current + ".bgtype", 0) == 3;
+		}
 
-      public void setupDialog()
-      {
-         addSelectInput("bgstyle", 0, new String[] { "Tile", "Center", "Fill", "Stretch" }, "Transform Image: ", 'T', 25);
-         addCheckboxInput("relative", false, "Align image with desktop", 'A');
-      }
-   }
+		@Override
+		public String getDescription() {
+			return "Options for selected background image";
+		}
 
-   protected class BackgroundSetup extends DTab 
-   {
-      private DefaultComboBoxModel desktop   = new DefaultComboBoxModel(new String[] { "Default", "Solid Color", "           ", "Image" });
-      private DefaultComboBoxModel statusbar = new DefaultComboBoxModel(new String[] { "Default", "Solid Color", "Transparent", "Image" });
-      private DefaultComboBoxModel window    = new DefaultComboBoxModel(new String[] { "       ", "Solid Color", "           ", "Image" });
+		@Override
+		public void setupDialog() {
+			addSelectInput("bgstyle", 0, new String[] { "Tile", "Center", "Fill", "Stretch" }, "Transform Image: ", 'T', 25);
+			addCheckboxInput("relative", false, "Align image with desktop", 'A');
+		}
+	}
 
-      private SelectInput selector;
+	protected class BackgroundSetup extends DTab {
+		private DefaultComboBoxModel desktop = new DefaultComboBoxModel(new String[] { "Default", "Solid Color", "           ", "Image" });
+		private DefaultComboBoxModel statusbar = new DefaultComboBoxModel(new String[] { "Default", "Solid Color", "Transparent", "Image" });
+		private DefaultComboBoxModel window = new DefaultComboBoxModel(new String[] { "       ", "Solid Color", "           ", "Image" });
 
-      public void refresh()
-      {
-         if (current.equals("statusbar"))
-            selector.setModel(statusbar);
+		private SelectInput selector;
 
-         if (current.equals("desktop"))
-            selector.setModel(desktop);
+		@Override
+		public void refresh() {
+			if (current.equals("statusbar")) {
+				selector.setModel(statusbar);
+			}
 
-         if (current.equals("window"))
-            selector.setModel(window);
+			if (current.equals("desktop")) {
+				selector.setModel(desktop);
+			}
 
-         super.refresh();
-      }
+			if (current.equals("window")) {
+				selector.setModel(window);
+			}
 
-      public String getTitle() 
-      { 
-         return "Type"; 
-      }
+			super.refresh();
+		}
 
-      public String getDescription() 
-      { 
-         return "Choose background options for the component"; 
-      }
+		@Override
+		public String getTitle() {
+			return "Type";
+		}
 
-      public void setupDialog()
-      {
-         selector = (SelectInput)addSelectInput("bgtype", 0, new String[] { "Default", "Solid Color", "Transparent", "Image" }, "Type of background:  ", 'T', 0);
-      }
-   }
+		@Override
+		public String getDescription() {
+			return "Choose background options for the component";
+		}
+
+		@Override
+		public void setupDialog() {
+			selector = addSelectInput("bgtype", 0, new String[] { "Default", "Solid Color", "Transparent", "Image" }, "Type of background:  ", 'T', 0);
+		}
+	}
 }
-
-
-

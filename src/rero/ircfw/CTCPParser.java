@@ -7,80 +7,72 @@
        - a CTCP Reply
        - (DCC stuff is a possibility later)
       
-**/
+ **/
 
 package rero.ircfw;
 
-import rero.ircfw.interfaces.FrameworkConstants;
-
-import java.util.regex.Pattern;
 import java.util.HashMap;
+import java.util.regex.Pattern;
+
+import rero.ircfw.interfaces.FrameworkConstants;
 import rero.util.StringParser;
 
-public class CTCPParser implements FrameworkConstants
-{
-   protected static String ctcpPattern = "\001(\\w++)(\\s*)(.*)\001";
+public class CTCPParser implements FrameworkConstants {
+	protected static String ctcpPattern = "\001(\\w++)(\\s*)(.*)\001";
 
-   protected static Pattern isCTCP = Pattern.compile(ctcpPattern);
+	protected static Pattern isCTCP = Pattern.compile(ctcpPattern);
 
-   public HashMap parseEvent (HashMap eventData)
-   {
-       String event, parms, data, target;
+	public HashMap parseEvent(HashMap eventData) {
+		String event, parms, data, target;
 
-       String type, parameters;
+		String type, parameters;
 
-       event  = (String)eventData.get($EVENT$);
-       parms  = (String)eventData.get($PARMS$);
-       target = (String)eventData.get($TARGET$);
- 
-       if ((! event.equals("NOTICE") && ! event.equals("PRIVMSG")) || parms == null )
-       {
-           return eventData;
-       }
+		event = (String) eventData.get($EVENT$);
+		parms = (String) eventData.get($PARMS$);
+		target = (String) eventData.get($TARGET$);
 
-       StringParser parser = new StringParser(parms, isCTCP);
+		if ((!event.equals("NOTICE") && !event.equals("PRIVMSG")) || parms == null) {
+			return eventData;
+		}
 
-       if (!parser.matches())
-       {                       // definetly not a CTCP we want nothing to do with it then.
-           return eventData;
-       }
-       
-       type       = parser.getParsedString(0); // thank god for regex's this would have taken forever
-       parameters = parser.getParsedString(2); // to code out before.
+		StringParser parser = new StringParser(parms, isCTCP);
 
-       parms = type + " " + parameters;
-       data  = target + " " + parms;       
+		if (!parser.matches()) { // definetly not a CTCP we want nothing to do with it then.
+			return eventData;
+		}
 
-       if (event.equals("PRIVMSG") && type.equals("ACTION"))
-       {
-          event = "ACTION";
-          data  = target + " " + parameters;       
+		type = parser.getParsedString(0); // thank god for regex's this would have taken forever
+		parameters = parser.getParsedString(2); // to code out before.
 
-          String whitespace = parser.getParsedString(1);
-          if (whitespace.length() > 1)
-          {
-             parameters = whitespace.substring(1) + parameters;
-          }
+		parms = type + " " + parameters;
+		data = target + " " + parms;
 
-          parms = parameters;
-       }
+		if (event.equals("PRIVMSG") && type.equals("ACTION")) {
+			event = "ACTION";
+			data = target + " " + parameters;
 
-       if (event.equals("PRIVMSG"))
-       {
-          event = "REQUEST";
-       }
+			String whitespace = parser.getParsedString(1);
+			if (whitespace.length() > 1) {
+				parameters = whitespace.substring(1) + parameters;
+			}
 
-       if (event.equals("NOTICE"))
-       {
-          event = "REPLY";
-       }
+			parms = parameters;
+		}
 
-       eventData.put($DATA$,  data);
-       eventData.put($PARMS$, parms); 
-       eventData.put($EVENT$, event);
-       eventData.put($TYPE$,  type);
+		if (event.equals("PRIVMSG")) {
+			event = "REQUEST";
+		}
 
-       return eventData;
-   }
+		if (event.equals("NOTICE")) {
+			event = "REPLY";
+		}
+
+		eventData.put($DATA$, data);
+		eventData.put($PARMS$, parms);
+		eventData.put($EVENT$, event);
+		eventData.put($TYPE$, type);
+
+		return eventData;
+	}
 
 }

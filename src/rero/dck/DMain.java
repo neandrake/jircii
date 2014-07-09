@@ -1,31 +1,26 @@
 package rero.dck;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
-import java.util.*;
+public abstract class DMain extends DContainer {
+	@Override
+	public JComponent setupLayout(JComponent component) {
+		component.setLayout(new BorderLayout());
+		component.add(new JPanel(), BorderLayout.CENTER);
+		component.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
-public abstract class DMain extends DContainer
-{
-   public JComponent setupLayout(JComponent component)
-   {
-      component.setLayout(new BorderLayout());
-      component.add(new JPanel(), BorderLayout.CENTER);
-      component.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+		JPanel container = new JPanel();
+		container.setLayout(new GridBagLayout());
 
-      JPanel container = new JPanel();
-      container.setLayout(new GridBagLayout());
+		component.add(container, BorderLayout.NORTH);
 
-      component.add(container, BorderLayout.NORTH);
+		return container;
+	}
 
-      return container;
-   }
-
-   public abstract String getDescription();
+	public abstract String getDescription();
 }
-
-
-

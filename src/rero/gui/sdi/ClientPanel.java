@@ -1,264 +1,251 @@
 package rero.gui.sdi;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.LinkedList;
 
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
-import java.util.*;
-
-import java.beans.*;
-
-import rero.gui.windows.*;
-import rero.gui.background.*;
-
-import rero.util.*;
-
-import rero.config.*;
-
+import rero.config.ClientDefaults;
+import rero.config.ClientState;
+import rero.config.ClientStateListener;
 import rero.gui.toolkit.OrientedToolBar;
+import rero.gui.windows.ClientWindow;
+import rero.gui.windows.StatusWindow;
+import rero.gui.windows.SwitchBarOptions;
+import rero.gui.windows.WindowManager;
 
 /** responsible for mantaining the state of the desktop GUI and switchbar */
-public class ClientPanel extends WindowManager implements ActionListener, ClientStateListener
-{
-    protected StatusWindow active = null;
+public class ClientPanel extends WindowManager implements ActionListener, ClientStateListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-    protected JPanel     desktop, top;
-    protected JLabel     button;
+	protected StatusWindow active = null;
 
-    public void propertyChanged(String key, String value)
-    {
-       if (key.equals("switchbar.position"))
-       {
-          int orientation = ClientState.getClientState().getInteger("switchbar.position", ClientDefaults.switchbar_position);
+	protected JPanel desktop, top;
+	protected JLabel button;
 
-          top.remove(button);
-          if (orientation == 2 || orientation == 3)
-          {
-             top.add(button, BorderLayout.SOUTH);
-          }
-          else
-          {
-             top.add(button, BorderLayout.EAST);
-          }
-       }
-       else
-       {
-          super.propertyChanged(key, value);
-       }
-    }
+	@Override
+	public void propertyChanged(String key, String value) {
+		if (key.equals("switchbar.position")) {
+			int orientation = ClientState.getClientState().getInteger("switchbar.position", ClientDefaults.switchbar_position);
 
-    public void init()
-    {
-       switchbar = new OrientedToolBar();  
+			top.remove(button);
+			if (orientation == 2 || orientation == 3) {
+				top.add(button, BorderLayout.SOUTH);
+			} else {
+				top.add(button, BorderLayout.EAST);
+			}
+		} else {
+			super.propertyChanged(key, value);
+		}
+	}
 
-       top = new JPanel();
-       top.setLayout(new BorderLayout(5, 0));
-       
-       button = new JLabel("<html><b>X</b>&nbsp;</html>", SwingConstants.CENTER);
-       button.setToolTipText("Close active window");
+	@Override
+	public void init() {
+		switchbar = new OrientedToolBar();
 
-       button.addMouseListener(new MouseAdapter()
-       {
-          protected Color original;
+		top = new JPanel();
+		top.setLayout(new BorderLayout(5, 0));
 
-          public void mousePressed(MouseEvent e)
-          {
-             original = button.getForeground();
-             button.setForeground(UIManager.getColor("TextArea.selectionBackground"));
-          }
+		button = new JLabel("<html><b>X</b>&nbsp;</html>", SwingConstants.CENTER);
+		button.setToolTipText("Close active window");
 
-          public void mouseClicked(MouseEvent e)
-          {
-             processClose();
-          }
+		button.addMouseListener(new MouseAdapter() {
+			protected Color original;
 
-          public void mouseReleased(MouseEvent e)
-          {
-             button.setForeground(original);
-          }
+			@Override
+			public void mousePressed(MouseEvent e) {
+				original = button.getForeground();
+				button.setForeground(UIManager.getColor("TextArea.selectionBackground"));
+			}
 
-          public void mouseEntered(MouseEvent e)
-          {
-             button.setText("<html><b><u>X</u></b>&nbsp;</html>");
-          }
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				processClose();
+			}
 
-          public void mouseExited(MouseEvent e)
-          {
-             button.setText("<html><b>X</b>&nbsp;</html>");
-          }
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				button.setForeground(original);
+			}
 
-       });
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				button.setText("<html><b><u>X</u></b>&nbsp;</html>");
+			}
 
-       top.add(switchbar, BorderLayout.CENTER);
+			@Override
+			public void mouseExited(MouseEvent e) {
+				button.setText("<html><b>X</b>&nbsp;</html>");
+			}
 
-       propertyChanged("switchbar.position", null);
-//       top.add(button, BorderLayout.SOUTH); // was EAST
+		});
 
-       setLayout(new BorderLayout());
+		top.add(switchbar, BorderLayout.CENTER);
 
-       switchOptions = new SwitchBarOptions(this, top);
- 
-//       add(top, BorderLayout.NORTH);
+		propertyChanged("switchbar.position", null);
+		// top.add(button, BorderLayout.SOUTH); // was EAST
 
-       windowMap = new HashMap();  
-       windows   = new LinkedList();
+		setLayout(new BorderLayout());
 
-       desktop = new JPanel();
-       desktop.setLayout(new BorderLayout());
+		switchOptions = new SwitchBarOptions(this, top);
 
-       add(desktop, BorderLayout.CENTER);
+		// add(top, BorderLayout.NORTH);
 
-       new MantainActiveFocus(this);
+		windowMap = new HashMap();
+		windows = new LinkedList();
 
-       ClientState.getClientState().addClientStateListener("switchbar.position", this);
-    }
+		desktop = new JPanel();
+		desktop.setLayout(new BorderLayout());
 
-    public void addWindow(StatusWindow window, boolean selected)
-    {
-       ClientSingleWindow temp = new ClientSingleWindow(this);
-       window.init(temp);
+		add(desktop, BorderLayout.CENTER);
 
-       windowMap.put(window.getWindow(), window);
-       windowMap.put(window.getButton(), window);
+		new MantainActiveFocus(this);
 
-       window.getButton().addActionListener(this);
+		ClientState.getClientState().addClientStateListener("switchbar.position", this);
+	}
 
-       // add to the switchbar
-       addToSwitchbar(window);
+	@Override
+	public void addWindow(StatusWindow window, boolean selected) {
+		ClientSingleWindow temp = new ClientSingleWindow(this);
+		window.init(temp);
 
-       // add to the desktop
-       if (selected)
-       {
-          if (active != null)
-          {
-             doDeactivate(active);
-          }
+		windowMap.put(window.getWindow(), window);
+		windowMap.put(window.getButton(), window);
 
-          desktop.add(temp, BorderLayout.CENTER); 
+		window.getButton().addActionListener(this);
 
-          active = window;
-       }
+		// add to the switchbar
+		addToSwitchbar(window);
 
-       temp.processOpen();
+		// add to the desktop
+		if (selected) {
+			if (active != null) {
+				doDeactivate(active);
+			}
 
-       if (selected)
-       {
-          if (!window.getButton().isSelected())
-          {
-             window.getButton().setSelected(true);
-          }
-       }
+			desktop.add(temp, BorderLayout.CENTER);
 
-       revalidate();
+			active = window;
+		}
 
-       refreshFocus(); 
-    }
+		temp.processOpen();
 
-    public void killWindow(ClientWindow cwindow)
-    {
-       StatusWindow window = getWindowFor(cwindow);
+		if (selected) {
+			if (!window.getButton().isSelected()) {
+				window.getButton().setSelected(true);
+			}
+		}
 
-       if (window == null)
-          return;          // making the code a little bit more robust...
-       
-       ((ClientSingleWindow)window.getWindow()).processClose();
+		revalidate();
 
-       int idx = windows.indexOf(window);
- 
-       switchbar.remove(window.getButton());
-       windowMap.remove(window.getButton());
-       windowMap.remove(window.getWindow());
-       windows.remove(window);
+		refreshFocus();
+	}
 
-       desktop.remove(window);          
+	public void killWindow(ClientWindow cwindow) {
+		StatusWindow window = getWindowFor(cwindow);
 
-       if (window == active && active.getName().equals(StatusWindow.STATUS_NAME))
-       {
-          active = null; // if we close the status window, that's it... make sure we get rid fo the reference
-       }
-       else if (window == active)
-       {
-          newActive(idx, true); // if this window was the active one, make another one active instead...
-          refreshFocus();
-       }
+		if (window == null) {
+			return; // making the code a little bit more robust...
+		}
 
-       switchbar.validate();
-       switchbar.repaint();
-    }
+		((ClientSingleWindow) window.getWindow()).processClose();
 
-    public void processClose()
-    { 
-       if (active != null)
-       {
-          killWindow(active.getWindow());
-       }       
-    }
+		int idx = windows.indexOf(window);
 
-    public StatusWindow getActiveWindow()
-    {
-       return active;
-    }
+		switchbar.remove(window.getButton());
+		windowMap.remove(window.getButton());
+		windowMap.remove(window.getWindow());
+		windows.remove(window);
 
-    protected void doActivate(StatusWindow window)
-    {
-       if (active != null && active != window.getWindow())
-       {
-          doDeactivate(active);
-       }
+		desktop.remove(window);
 
-       desktop.add((ClientSingleWindow)window.getWindow(), BorderLayout.CENTER);
+		if (window == active && active.getName().equals(StatusWindow.STATUS_NAME)) {
+			active = null; // if we close the status window, that's it... make sure we get rid fo the reference
+		} else if (window == active) {
+			newActive(idx, true); // if this window was the active one, make another one active instead...
+			refreshFocus();
+		}
 
-       active = window;
-       ((ClientSingleWindow)active.getWindow()).processActive();
+		switchbar.validate();
+		switchbar.repaint();
+	}
 
-       if (!window.getButton().isSelected())
-       {
-          window.getButton().setSelected(true);
-       }
+	public void processClose() {
+		if (active != null) {
+			killWindow(active.getWindow());
+		}
+	}
 
-       revalidate();
-       repaint();
+	@Override
+	public StatusWindow getActiveWindow() {
+		return active;
+	}
 
-       refreshFocus(); 
-    }
+	@Override
+	protected void doActivate(StatusWindow window) {
+		if (active != null && active != window.getWindow()) {
+			doDeactivate(active);
+		}
 
-    public void refreshFocus()
-    {
-       SwingUtilities.invokeLater(new Runnable()
-       {
-          public void run()
-          {
-             if (getActiveWindow() != null && isShowing() && getActiveWindow().isLegalWindow() && !rero.gui.KeyBindings.is_dialog_active)
-             {
-                getActiveWindow().getInput().requestFocus();
-             }
-          }
-       });
-    }
+		desktop.add((ClientSingleWindow) window.getWindow(), BorderLayout.CENTER);
 
-    protected void doDeactivate(StatusWindow window)
-    {
-       desktop.remove((ClientSingleWindow)window.getWindow());
-       ((ClientSingleWindow)window.getWindow()).processInactive();
-       window.getButton().setSelected(false);
-    }
+		active = window;
+		((ClientSingleWindow) active.getWindow()).processActive();
 
-    private class MantainActiveFocus extends ComponentAdapter
-    {
-        public MantainActiveFocus(JComponent component)
-        {
-           component.addComponentListener(this);
-        }
+		if (!window.getButton().isSelected()) {
+			window.getButton().setSelected(true);
+		}
 
-        public void componentMoved(ComponentEvent e)
-        {
-        }
+		revalidate();
+		repaint();
 
-        public void componentShown(ComponentEvent e)
-        {
-           refreshFocus();
-        }
-    }
+		refreshFocus();
+	}
+
+	public void refreshFocus() {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				if (getActiveWindow() != null && isShowing() && getActiveWindow().isLegalWindow() && !rero.gui.KeyBindings.is_dialog_active) {
+					getActiveWindow().getInput().requestFocus();
+				}
+			}
+		});
+	}
+
+	@Override
+	protected void doDeactivate(StatusWindow window) {
+		desktop.remove((ClientSingleWindow) window.getWindow());
+		((ClientSingleWindow) window.getWindow()).processInactive();
+		window.getButton().setSelected(false);
+	}
+
+	private class MantainActiveFocus extends ComponentAdapter {
+		public MantainActiveFocus(JComponent component) {
+			component.addComponentListener(this);
+		}
+
+		@Override
+		public void componentMoved(ComponentEvent e) {}
+
+		@Override
+		public void componentShown(ComponentEvent e) {
+			refreshFocus();
+		}
+	}
 }

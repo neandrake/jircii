@@ -1,63 +1,62 @@
 package rero.gui.windows;
 
-import rero.ircfw.*;
-import rero.client.*;
-import javax.swing.*;
+import javax.swing.ImageIcon;
 
-import rero.config.*;
+import rero.client.Capabilities;
+import rero.config.ClientState;
 
-public class QueryWindow extends StatusWindow
-{
-   protected String   user; // user object.
+public class QueryWindow extends StatusWindow {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected String user; // user object.
 
-   public QueryWindow(String _user)
-   {
-      user = _user;
-   }
+	public QueryWindow(String _user) {
+		user = _user;
+	}
 
-   public ImageIcon getImageIcon()
-   {
-      if (icon == null)
-      {
-         icon = new ImageIcon(ClientState.getClientState().getResource("query.gif"));
-      }
+	@Override
+	public ImageIcon getImageIcon() {
+		if (icon == null) {
+			icon = new ImageIcon(ClientState.getClientState().getResource("query.gif"));
+		}
 
-      return icon;
-   }
+		return icon;
+	}
 
-   public void installCapabilities(Capabilities c)
-   {
-      super.installCapabilities(c);
-   }
+	@Override
+	public void installCapabilities(Capabilities c) {
+		super.installCapabilities(c);
+	}
 
-   public String getWindowType()
-   {
-      if (user.charAt(0) == '=')
-      {
-         return "chat";
-      }
+	@Override
+	public String getWindowType() {
+		if (user.charAt(0) == '=') {
+			return "chat";
+		}
 
-      return "query";
-   }
+		return "query";
+	}
 
-   public String getQuery()
-   {
-      return user;
-   }
+	@Override
+	public String getQuery() {
+		return user;
+	}
 
-   public void setName(String name)  
-   {
-      user = name;
-      super.setName(name);
-   }
+	@Override
+	public void setName(String name) {
+		user = name;
+		super.setName(name);
+	}
 
-   public String getName()
-   {
-      return user;
-   }
+	@Override
+	public String getName() {
+		return user;
+	}
 
-   public int compareWindowType()
-   {
-      return 3;
-   }
+	@Override
+	public int compareWindowType() {
+		return 3;
+	}
 }

@@ -1,50 +1,40 @@
 package rero.dialogs;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.FlowLayout;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import rero.config.ClientDefaults;
+import rero.dck.DGroup;
+import rero.dck.DMain;
+import rero.dck.items.CheckboxInput;
 
-import java.util.*;
+public class SwitchBarDialog extends DMain {
+	@Override
+	public String getTitle() {
+		return "Switchbar";
+	}
 
-import rero.dck.items.*;
-import rero.config.*;
-import rero.dck.*;
+	@Override
+	public String getDescription() {
+		return "Switchbar Options";
+	}
 
-public class SwitchBarDialog extends DMain
-{
-   public String getTitle()
-   {
-      return "Switchbar";
-   }
+	@Override
+	public void setupDialog() {
+		addBlankSpace();
+		addBlankSpace();
 
-   public String getDescription()
-   {
-      return "Switchbar Options";
-   }
+		DGroup temp = addDialogGroup(new DGroup("Switchbar Options", 30) {
+			@Override
+			public void setupDialog() {
+				addSelectInput("switchbar.position", 0, new String[] { "Top", "Bottom", "Left", "Right" }, "Position:  ", 'P', 25);
+				// addSelectInput("switchbar.position", 0, new String[] { "Top", "Bottom" }, "Position:  ", 'P', 25);
+				addColorInput("switchbar.color", ClientDefaults.switchbar_color, "Activity Color", 'A');
+				addCheckboxInput("switchbar.fixed", ClientDefaults.switchbar_fixed, "Fixed width switchbar buttons", 'F', FlowLayout.LEFT);
+				addCheckboxInput("switchbar.sort", ClientDefaults.switchbar_sort, "Sort buttons alphabetically", 'F', FlowLayout.LEFT);
+			}
+		});
 
-   public void setupDialog()
-   {
-      addBlankSpace();
-      addBlankSpace();
-
-      DGroup temp = addDialogGroup(new DGroup("Switchbar Options", 30)
-      {
-          public void setupDialog()
-          {
-              addSelectInput("switchbar.position", 0, new String[] { "Top", "Bottom", "Left", "Right" }, "Position:  ", 'P', 25);
-//              addSelectInput("switchbar.position", 0, new String[] { "Top", "Bottom" }, "Position:  ", 'P', 25);
-              addColorInput("switchbar.color", ClientDefaults.switchbar_color, "Activity Color", 'A');
-              addCheckboxInput("switchbar.fixed", ClientDefaults.switchbar_fixed,  "Fixed width switchbar buttons", 'F', FlowLayout.LEFT);
-              addCheckboxInput("switchbar.sort", ClientDefaults.switchbar_sort,  "Sort buttons alphabetically", 'F', FlowLayout.LEFT);
-          }
-      });
-
-      CheckboxInput boxed = addCheckboxInput("switchbar.enabled", true,  "Enable Switchbar", 'S', FlowLayout.CENTER);
-      boxed.addDependent(temp);
-   }
+		CheckboxInput boxed = addCheckboxInput("switchbar.enabled", true, "Enable Switchbar", 'S', FlowLayout.CENTER);
+		boxed.addDependent(temp);
+	}
 }
-
-
-

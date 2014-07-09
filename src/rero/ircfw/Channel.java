@@ -1,100 +1,122 @@
 package rero.ircfw;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import rero.ircfw.data.GenericMode;
 import rero.ircfw.interfaces.FrameworkConstants;
-import rero.ircfw.data.*;
 
-public class Channel implements FrameworkConstants, Comparator
-{
-    protected String topic = ""; /* channel topic */
+public class Channel implements FrameworkConstants, Comparator {
+	protected String topic = ""; /* channel topic */
 
-    public void setTopic(String t) { topic = t; }
-    public String getTopic() { return topic; }
+	public void setTopic(String t) {
+		topic = t;
+	}
 
-    protected int    limit; /* channel user limit */
+	public String getTopic() {
+		return topic;
+	}
 
-    public void setLimit(int l) { limit = l; }
-    public int getLimit() { return limit; }
+	protected int limit; /* channel user limit */
 
-    protected String   key; /* channel key */
+	public void setLimit(int l) {
+		limit = l;
+	}
 
-    public void setKey(String k) { key = k; }
-    public String getKey() { return key; }
+	public int getLimit() {
+		return limit;
+	}
 
-    protected GenericMode mode = new GenericMode(); /* channel mode */
+	protected String key; /* channel key */
 
-    public void setMode(String m) { mode = new GenericMode(m); }
-    public GenericMode getMode() { return mode; }
+	public void setKey(String k) {
+		key = k;
+	}
 
-    protected String  name; /* name of this #channel */
+	public String getKey() {
+		return key;
+	}
 
-    public String getName() { return name; }
-  
-    public Channel(String name)
-    {
-       this.name = name;
-    }
+	protected GenericMode mode = new GenericMode(); /* channel mode */
 
-    protected SortedSet allusers  = Collections.synchronizedSortedSet(new TreeSet(this));  // keep this synchronized or bad things will happen
+	public void setMode(String m) {
+		mode = new GenericMode(m);
+	}
 
-    public int compare(Object aa, Object bb)
-    {
-       User a = (User)aa;
-       User b = (User)bb;
+	public GenericMode getMode() {
+		return mode;
+	}
 
-       if (a == null || b == null) 
-          return 0;
+	protected String name; /* name of this #channel */
 
-       int aM = a.getModeFor(this);
-       int bM = b.getModeFor(this);
+	public String getName() {
+		return name;
+	}
 
-       int result = bM - aM;
+	public Channel(String name) {
+		this.name = name;
+	}
 
-       if (result == 0)
-       {
-          return a.compareTo(b);
-       }
+	protected SortedSet allusers = Collections.synchronizedSortedSet(new TreeSet(this)); // keep this synchronized or bad
+																							// things will happen
 
-       return result;
-    }
+	@Override
+	public int compare(Object aa, Object bb) {
+		User a = (User) aa;
+		User b = (User) bb;
 
-    public Set getAllUsers()
-    {
-       return allusers; /* for now */
-    }
+		if (a == null || b == null) {
+			return 0;
+		}
 
-    public String toString()
-    {
-       StringBuffer temp = new StringBuffer();
-       temp.append(getName());
-       temp.append(" \"");
-       temp.append(getTopic());
-       temp.append("\", ");
+		int aM = a.getModeFor(this);
+		int bM = b.getModeFor(this);
 
-       temp.append(getMode());
- 
-       if (getMode().isSet('k'))
-       {
-          temp.append(" key="+key);
-       }
+		int result = bM - aM;
 
-       if (getMode().isSet('l'))
-       {
-          temp.append(" limit="+limit);
-       }
+		if (result == 0) {
+			return a.compareTo(b);
+		}
 
-       temp.append(", ");
+		return result;
+	}
 
-       Iterator iter = getAllUsers().iterator();
-       while (iter.hasNext())
-       {
-           User tempa = (User)iter.next();
-           temp.append("?");
-           temp.append(tempa.getNick());
-           temp.append(" ");
-       }
+	public Set getAllUsers() {
+		return allusers; /* for now */
+	}
 
-       return temp.toString();
-    }
+	@Override
+	public String toString() {
+		StringBuffer temp = new StringBuffer();
+		temp.append(getName());
+		temp.append(" \"");
+		temp.append(getTopic());
+		temp.append("\", ");
+
+		temp.append(getMode());
+
+		if (getMode().isSet('k')) {
+			temp.append(" key=" + key);
+		}
+
+		if (getMode().isSet('l')) {
+			temp.append(" limit=" + limit);
+		}
+
+		temp.append(", ");
+
+		Iterator iter = getAllUsers().iterator();
+		while (iter.hasNext()) {
+			User tempa = (User) iter.next();
+			temp.append("?");
+			temp.append(tempa.getNick());
+			temp.append(" ");
+		}
+
+		return temp.toString();
+	}
 }

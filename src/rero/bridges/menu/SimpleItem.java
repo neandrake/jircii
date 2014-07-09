@@ -1,50 +1,42 @@
 package rero.bridges.menu;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JMenuItem;
 
-import sleep.runtime.*;
-import sleep.engine.*;
+import rero.client.user.UserHandler;
+import rero.gui.SessionManager;
+import sleep.runtime.ScriptInstance;
 
-import java.util.*;
+public class SimpleItem extends JMenuItem implements ActionListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected ScriptInstance owner;
+	protected String code;
 
-import rero.gui.*;
+	public SimpleItem(ScriptInstance _owner, String _label, String _code) {
+		if (_label.indexOf('&') > -1) {
+			setText(_label.substring(0, _label.indexOf('&')) + _label.substring(_label.indexOf('&') + 1, _label.length()));
+			setMnemonic(_label.charAt(_label.indexOf('&') + 1));
+		} else {
+			setText(_label);
+		}
 
-import rero.client.user.*;
+		owner = _owner;
+		code = _code;
 
-public class SimpleItem extends JMenuItem implements ActionListener
-{
-   protected ScriptInstance owner;
-   protected String         code;
+		if (code.charAt(0) != '/') {
+			code = '/' + code;
+		}
 
-   public SimpleItem(ScriptInstance _owner, String _label, String _code)
-   {
-       if (_label.indexOf('&') > -1)
-       {
-          setText( _label.substring(0, _label.indexOf('&')) + _label.substring(_label.indexOf('&') + 1, _label.length()) );
-          setMnemonic(_label.charAt(_label.indexOf('&') + 1));
-       }
-       else
-       {
-          setText(_label);
-       }
+		addActionListener(this);
+	}
 
-       owner = _owner;
-       code  = _code;
-
-       if (code.charAt(0) != '/')
-       {
-          code = '/' + code;
-       }
- 
-       addActionListener(this);
-   }
-
-   public void actionPerformed(ActionEvent e) 
-   { 
-       ((UserHandler)SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities().getDataStructure("commands")).processCommand(code);
-   }
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		((UserHandler) SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities().getDataStructure("commands")).processCommand(code);
+	}
 }

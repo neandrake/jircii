@@ -1,59 +1,52 @@
 package rero.gui.windows;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
 
-import rero.config.*;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
-public class ListBoxOptions implements ClientStateListener
-{
-   protected JComponent container;
-   protected JComponent listbox;
+import rero.config.ClientState;
+import rero.config.ClientStateListener;
 
-   public ListBoxOptions(JComponent c, JComponent l)
-   {
-      container = c;
-      listbox   = l;
+public class ListBoxOptions implements ClientStateListener {
+	protected JComponent container;
+	protected JComponent listbox;
 
-      ClientState.getClientState().addClientStateListener("listbox.position", this);
-      ClientState.getClientState().addClientStateListener("listbox.enabled", this);
+	public ListBoxOptions(JComponent c, JComponent l) {
+		container = c;
+		listbox = l;
 
-      rehash();
-   }
+		ClientState.getClientState().addClientStateListener("listbox.position", this);
+		ClientState.getClientState().addClientStateListener("listbox.enabled", this);
 
-   public void rehash()
-   {
-      synchronized (listbox)
-      {
-         container.remove(listbox);
+		rehash();
+	}
 
-         boolean enabled  = ClientState.getClientState().isOption("listbox.enabled", true);
-         int     position = ClientState.getClientState().getInteger("listbox.position", 1); // default to right...
+	public void rehash() {
+		synchronized (listbox) {
+			container.remove(listbox);
 
-         if (enabled)
-         {
-            if (position == 0)
-            {
-               container.add(listbox, BorderLayout.WEST);
-            }
-            else
-            {
-               container.add(listbox, BorderLayout.EAST);
-            }
-         }
-      }
-   }
+			boolean enabled = ClientState.getClientState().isOption("listbox.enabled", true);
+			int position = ClientState.getClientState().getInteger("listbox.position", 1); // default to right...
 
-   public void propertyChanged(String key, String value)
-   {
-      SwingUtilities.invokeLater(new Runnable()
-      {
-         public void run()
-         {
-            rehash();
-            container.revalidate();
-         } 
-      });
-   }
+			if (enabled) {
+				if (position == 0) {
+					container.add(listbox, BorderLayout.WEST);
+				} else {
+					container.add(listbox, BorderLayout.EAST);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void propertyChanged(String key, String value) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				rehash();
+				container.revalidate();
+			}
+		});
+	}
 }
-

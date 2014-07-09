@@ -1,184 +1,177 @@
 package rero.gui.windows;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.util.HashMap;
 
-import java.awt.*;
-import java.awt.event.*;
+import rero.client.DataStructures;
+import rero.client.output.OutputCapabilities;
+import rero.dcc.DataDCC;
+import rero.dcc.GenericDCC;
+import rero.dcc.ProtocolDCC;
+import rero.gui.toolkit.GeneralListModel;
+import rero.ircfw.interfaces.ChatListener;
+import rero.ircfw.interfaces.FrameworkConstants;
+import rero.util.TimerListener;
+import text.AttributedString;
+// sorted JTable code...
 
-import java.util.*;
-import rero.util.*;
+public class DCCListDialog extends GeneralListDialog implements TimerListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-import contrib.javapro.*;  // sorted JTable code...
+	public DCCListDialog() {
+		super("DCC Sessions", "dcc", new DCCListModel());
+	}
 
-import rero.ircfw.interfaces.*;
+	@Override
+	public void timerExecute() {
+		table.repaint();
+	}
 
-import rero.config.*;
-import rero.client.*;
+	private class DCCListener implements ChatListener, FrameworkConstants {
+		@Override
+		public boolean isChatEvent(String event, HashMap eventData) {
+			return (event.indexOf("CHAT_") > -1 || event.indexOf("SEND_") > -1 || event.indexOf("RECEIVE_") > -1);
+		}
 
-import rero.gui.*;
-import rero.gui.windows.*;
-import rero.gui.toolkit.*;
+		@Override
+		public int fireChatEvent(HashMap data) {
+			model.fireTableDataChanged();
+			return EVENT_DONE;
+		}
+	}
 
-import text.*;
+	@Override
+	public void init() {
+		((DCCListModel) model).installData((DataDCC) capabilities.getDataStructure(DataStructures.DataDCC), capabilities.getOutputCapabilities());
+		model.fireTableDataChanged();
 
-import rero.dcc.*;
-import rero.client.output.*;
+		capabilities.getTimer().addTimer(this, 1000);
+		capabilities.addChatListener(new DCCListener());
+	}
 
-public class DCCListDialog extends GeneralListDialog implements TimerListener
-{
-   public DCCListDialog()
-   {
-      super("DCC Sessions", "dcc", new DCCListModel());
-   }
+	private static class DCCListModel extends GeneralListModel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		protected DataDCC data;
+		protected OutputCapabilities output;
 
-   public void timerExecute()
-   {
-      table.repaint();
-   }
+		// private HashMap event = new HashMap();
 
-   private class DCCListener implements ChatListener, FrameworkConstants
-   {
-      public boolean isChatEvent(String event, HashMap eventData)
-      {
-         return (event.indexOf("CHAT_") > -1 || event.indexOf("SEND_") > -1 || event.indexOf("RECEIVE_") > -1);
-      }
+		@Override
+		public HashMap getEventHashMap(int row) {
+			HashMap event = new HashMap();
 
-      public int fireChatEvent(HashMap data)
-      {
-         model.fireTableDataChanged();
-         return EVENT_DONE;
-      }
-   }
+			GenericDCC temp = (GenericDCC) getConnections().get(row);
+			event.put("$this", temp.getImplementation().toString());
 
-   public void init()
-   {
-      ((DCCListModel)model).installData((DataDCC)capabilities.getDataStructure(DataStructures.DataDCC), capabilities.getOutputCapabilities());
-      model.fireTableDataChanged();
+			return event;
+		}
 
-      capabilities.getTimer().addTimer(this, 1000);
-      capabilities.addChatListener(new DCCListener());
-   }
+		public void installData(DataDCC d, OutputCapabilities o) {
+			data = d;
+			output = o;
+		}
 
-   private static class DCCListModel extends GeneralListModel
-   {
-      protected DataDCC data;
-      protected OutputCapabilities output;
+		@Override
+		public void sortColumn(int col, boolean ascending) {
+			fireTableDataChanged();
+		}
 
-//      private   HashMap event = new HashMap();
+		private java.util.List getConnections() {
+			return data.getConnections(-1, ProtocolDCC.STATE_OPEN);
+		}
 
-      public HashMap getEventHashMap (int row)
-      { 
-         HashMap event = new HashMap();
+		@Override
+		public int getRowCount() {
+			if (data == null) {
+				return 0;
+			}
 
-         GenericDCC temp = (GenericDCC)getConnections().get(row);
-         event.put("$this", temp.getImplementation().toString());
+			return getConnections().size();
+		}
 
-         return event;
-      }
+		@Override
+		public int getColumnCount() {
+			return 3;
+		}
 
-      public void installData(DataDCC d, OutputCapabilities o)
-      {
-         data = d;
-         output = o;
-      }
+		@Override
+		public int getColumnWidth(int col) {
+			if (col == 0) {
+				return 75;
+			}
 
-      public void sortColumn(int col, boolean ascending) 
-      {
-         fireTableDataChanged();
-      }
+			if (col == 1) {
+				return 100;
+			}
 
-      private java.util.List getConnections()
-      {
-         return data.getConnections(-1, ProtocolDCC.STATE_OPEN);
-      }
+			return 400;
+		}
 
-      public int getRowCount()
-      {
-         if (data == null)
-             return 0; 
+		@Override
+		public String getColumnName(int col) {
+			switch (col) {
+			case 0:
+				return "Type";
 
-         return getConnections().size();
-      }
+			case 1:
+				return "Nickname";
 
-      public int getColumnCount()
-      {
-         return 3;
-      }
+			case 2:
+				return "Information";
 
-      public int getColumnWidth(int col)
-      {
-         if (col == 0)
-             return 75;
+			case 3:
+				return "File";
+			}
 
-         if (col == 1)
-             return 100;
+			return "Unknown";
+		}
 
-         return 400;
-      }
+		@Override
+		public Object getValueAt(int row, int col) {
+			if (row >= getRowCount()) {
+				return null;
+			}
 
-      public String getColumnName(int col)
-      {
-         switch (col)
-         {
-            case 0:
-              return "Type";
+			HashMap temp = getEventHashMap(row);
+			String text = "";
 
-            case 1:
-              return "Nickname";
+			switch (col) {
+			case 0:
+				text = output.parseSet(temp, "DCC_LIST_TYPE");
+				break;
 
-            case 2:
-              return "Information";
+			case 1:
+				text = output.parseSet(temp, "DCC_LIST_NICK");
+				break;
 
-            case 3:
-              return "File";
-         }
+			case 2:
+				text = output.parseSet(temp, "DCC_LIST_INFORMATION");
+				break;
 
-         return "Unknown";
-      }
+			case 3:
+				text = output.parseSet(temp, "DCC_LIST_FILE");
+				break;
+			}
 
-      public Object getValueAt(int row, int col)
-      {
-         if (row >= getRowCount())
-            return null;
+			AttributedString tempa = AttributedString.CreateAttributedString(text);
+			tempa.assignWidths();
 
-         HashMap temp = getEventHashMap(row);
-         String  text = "";
+			return tempa;
+		}
 
-         switch (col)
-         {
-            case 0:
-              text = output.parseSet(temp, "DCC_LIST_TYPE");
-              break;
+		@Override
+		public boolean isSortable(int col) {
+			return false;
+		}
+	}
 
-            case 1:
-              text = output.parseSet(temp, "DCC_LIST_NICK");
-              break;
-
-            case 2:
-              text = output.parseSet(temp, "DCC_LIST_INFORMATION");
-              break;
-
-            case 3:
-              text = output.parseSet(temp, "DCC_LIST_FILE");
-              break;
-         }
-
-         AttributedString tempa = AttributedString.CreateAttributedString(text);
-         tempa.assignWidths();
- 
-         return tempa;
-      }
-
-      public boolean isSortable(int col)
-      {
-         return false;
-      }
-   }
-
-   public String getWindowType()
-   {
-      return "DCCStats";
-   }
+	@Override
+	public String getWindowType() {
+		return "DCCStats";
+	}
 }
