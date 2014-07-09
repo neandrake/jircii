@@ -1,6 +1,6 @@
-jIRCii (Personal Fork) 
-
-Fork of Java IRC Client [website](http://www.oldschoolirc.com/) / [source](https://code.google.com/p/jircii/)
+jIRCii 
 =====
+Personal fork of Java IRC Client [website](http://www.oldschoolirc.com/) / [source](https://code.google.com/p/jircii/)
 
-Personal fork of the jIRCii client. The last client release was in 2011 and there are some bug fixes/missing features.
+- `Fix`: Multi-line text selection/copy in channel copies additional text after selection end
+- `Feature`: SSL Keystore for servers
