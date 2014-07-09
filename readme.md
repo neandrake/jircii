@@ -6,6 +6,8 @@ Personal fork of Java IRC Client [website](http://www.oldschoolirc.com/) / [sour
 	- Remove excessive singleton pattern favoring application hierarchy
 	- Separate UI from IRC engine
 	- Update Collection to use generics
-- `Fix`: Multi-line text selection/copy in channel copies additional text after selection end
-- `Feature`: SSL Keystore for servers
-- `Feature`: ...I kinda want to add Lua/Python as a scripting engine
+- `Fixes`:
+	- Multi-line text selection/copy in channel copies additional text after selection end
+- `Features`:
+	- SSL Keystore for servers
+	- ...I kinda want to add Lua/Python as a scripting engine
