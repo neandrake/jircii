@@ -40,6 +40,8 @@ public abstract class NativeSystem {
 		OperatingSystem os = SystemEnvironment.getOperatingSystem();
 		switch (os) {
 		case Mac: return new MacSystem();
+		case Windows: return new WindowsSystem();
+		case Linux: return new LinuxSystem();
 		default: return null;
 		}
 	}
