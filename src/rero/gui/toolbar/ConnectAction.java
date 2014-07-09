@@ -4,17 +4,17 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JPopupMenu;
 
+import jircii.app.Application;
 import rero.bridges.menu.MenuBridge;
 import rero.client.Capabilities;
-import rero.gui.SessionManager;
 
 public class ConnectAction implements ToolAction {
 	@Override
 	public void actionPerformed(MouseEvent ev) {
-		Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
+		Capabilities client = Application.getInstance().getWindow().getSessionManager().getActiveSession().getCapabilities();
 
 		if (client.isConnected()) {
-			SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/QUIT");
+			Application.getInstance().getWindow().getSessionManager().getActiveSession().executeCommand("/QUIT");
 		} else {
 			MenuBridge menuManager = (MenuBridge) client.getDataStructure("menuBridge");
 
@@ -29,7 +29,7 @@ public class ConnectAction implements ToolAction {
 
 	@Override
 	public String getDescription() {
-		Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
+		Capabilities client = Application.getInstance().getWindow().getSessionManager().getActiveSession().getCapabilities();
 
 		if (client.isConnected()) {
 			return "Disconnect from server";
@@ -40,7 +40,7 @@ public class ConnectAction implements ToolAction {
 
 	@Override
 	public int getIndex() {
-		Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
+		Capabilities client = Application.getInstance().getWindow().getSessionManager().getActiveSession().getCapabilities();
 
 		if (client.isConnected()) {
 			return 1;

@@ -2,10 +2,10 @@ package rero.dialogs;
 
 import java.awt.FlowLayout;
 
+import jircii.app.Application;
 import rero.dck.DGroup;
 import rero.dck.DMain;
 import rero.dck.items.CheckboxInput;
-import rero.util.ClientUtils;
 
 public class AttentionDialog extends DMain {
 	@Override
@@ -25,7 +25,7 @@ public class AttentionDialog extends DMain {
 		addBlankSpace();
 		addBlankSpace();
 
-		if (ClientUtils.isMac()) {
+		if (Application.getInstance().getNativeSystem().isMac()) {
 			// Draw Mac OS X attention options
 			DGroup temp2 = addDialogGroup(new DGroup("Mac OS X", 10) {
 				@Override
@@ -40,6 +40,6 @@ public class AttentionDialog extends DMain {
 					addBlankSpace();
 				}
 			});
-		} else if (ClientUtils.isWindows()) {} else if (ClientUtils.isLinux()) {}
+		} else if (Application.getInstance().getNativeSystem().isWindows()) {} else if (Application.getInstance().getNativeSystem().isLinux()) {}
 	}
 }

@@ -17,9 +17,9 @@ import javax.swing.JComponent;
 import javax.swing.JScrollBar;
 import javax.swing.event.MouseInputListener;
 
+import jircii.app.Application;
 import rero.config.ClientState;
 import rero.config.ClientStateListener;
-import rero.gui.SessionManager;
 import rero.gui.script.WindowAreaClickListener;
 import text.event.ClickEvent;
 import text.event.ClickListener;
@@ -204,7 +204,7 @@ public class WrappedDisplay extends JComponent implements MouseWheelListener, Mo
 				}).start();
 			}
 		} else {
-			String wname = SessionManager.getGlobalCapabilities().getActiveSession().getActiveWindow().getName();
+			String wname = Application.getInstance().getWindow().getSessionManager().getActiveSession().getActiveWindow().getName();
 			fireClickEvent(null, wname, ev);
 		}
 	}

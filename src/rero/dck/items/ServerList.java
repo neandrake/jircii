@@ -31,6 +31,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import jircii.app.Application;
 import rero.config.ClientState;
 import rero.config.StringList;
 import rero.dck.DCapabilities;
@@ -42,7 +43,6 @@ import rero.dialogs.server.ServerGroup;
 import rero.dialogs.toolkit.ADialog;
 import rero.dialogs.toolkit.APanel;
 import rero.dialogs.toolkit.LabelGroup;
-import rero.gui.SessionManager;
 
 public class ServerList extends JPanel implements DItem {
 	/**
@@ -154,13 +154,13 @@ public class ServerList extends JPanel implements DItem {
 	public void handleConnectAction() {
 		capabilities.forceSave();
 
-		if (SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities().isConnected()) {
-			SessionManager.getGlobalCapabilities().createNewServer();
+		if (Application.getInstance().getWindow().getSessionManager().getActiveSession().getCapabilities().isConnected()) {
+			Application.getInstance().getWindow().getSessionManager().addSession();
 		}
 
 		if (list.getSelectedValue() != null) {
 			Server connectToMe = (Server) list.getSelectedValue();
-			SessionManager.getGlobalCapabilities().getActiveSession().executeCommand(connectToMe.getCommand());
+			Application.getInstance().getWindow().getSessionManager().getActiveSession().executeCommand(connectToMe.getCommand());
 			capabilities.closeDialog();
 		} else {
 			JOptionPane.showMessageDialog(null, "Please select a server", "Warning", JOptionPane.WARNING_MESSAGE);

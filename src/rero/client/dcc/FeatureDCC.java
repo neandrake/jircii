@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
+import jircii.app.Application;
 import rero.client.DataStructures;
 import rero.client.Feature;
 import rero.client.user.ClientCommand;
@@ -188,7 +189,8 @@ public class FeatureDCC extends Feature implements ClientCommand, ChatListener, 
 
 			dccData.addConnection(port + "", connect);
 
-			boolean checkDialog = ClientState.getClientState().getInteger("dcc.onchat", ClientDefaults.dcc_accept) == 0 && ChatRequest.showDialog(getCapabilities().getGlobalCapabilities().getFrame(), connect);
+			boolean checkDialog = ClientState.getClientState().getInteger("dcc.onchat", ClientDefaults.dcc_accept) == 0
+					&& ChatRequest.showDialog(Application.getInstance().getWindow(), connect);
 			boolean checkAutoAccept = ClientState.getClientState().getInteger("dcc.onchat", ClientDefaults.dcc_accept) == 1;
 
 			if (checkDialog || checkAutoAccept) {
@@ -257,7 +259,8 @@ public class FeatureDCC extends Feature implements ClientCommand, ChatListener, 
 
 			dccData.addConnection(port + "", connect);
 
-			boolean checkDialog = ClientState.getClientState().getInteger("dcc.onsend", ClientDefaults.dcc_accept) == 0 && SendRequest.showDialog(getCapabilities().getGlobalCapabilities().getFrame(), connect);
+			boolean checkDialog = ClientState.getClientState().getInteger("dcc.onsend", ClientDefaults.dcc_accept) == 0
+					&& SendRequest.showDialog(Application.getInstance().getWindow(), connect);
 			boolean checkAutoAccept = ClientState.getClientState().getInteger("dcc.onsend", ClientDefaults.dcc_accept) == 1;
 
 			if (checkDialog || checkAutoAccept) {
@@ -290,7 +293,7 @@ public class FeatureDCC extends Feature implements ClientCommand, ChatListener, 
 				}
 				break;
 			case DCCUtilities.RENAME_OPTION_SELECTED:
-				boolean option = SendRequest.showDialog(getCapabilities().getGlobalCapabilities().getFrame(), connect);
+				boolean option = SendRequest.showDialog(Application.getInstance().getWindow(), connect);
 
 				if (option) {
 					handleReceive(protocol, connect, description, temp);

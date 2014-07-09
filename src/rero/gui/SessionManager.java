@@ -16,6 +16,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import jircii.app.Application;
 import rero.bridges.menu.MenuBridge;
 import rero.config.ClientDefaults;
 import rero.config.ClientState;
@@ -31,10 +32,8 @@ import rero.net.interfaces.SocketStatusListener;
 import rero.test.QuickConnect;
 
 public class SessionManager extends JTabbedPane implements ClientWindowListener, SocketStatusListener, ChangeListener, ClientStateListener {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+
 	protected HashMap sessions = new HashMap();
 	protected IRCSession active = null;
 	protected JFrame frame = null;
@@ -44,12 +43,6 @@ public class SessionManager extends JTabbedPane implements ClientWindowListener,
 
 	protected String lastscript = "";
 	protected long lastref = 0;
-
-	protected static GlobalCapabilities global;
-
-	public static GlobalCapabilities getGlobalCapabilities() {
-		return global;
-	}
 
 	@Override
 	public void propertyChanged(String property, String parameter) {
@@ -96,8 +89,6 @@ public class SessionManager extends JTabbedPane implements ClientWindowListener,
 
 		setTabPlacement(SwingConstants.BOTTOM);
 		// setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT); - swing bug
-
-		global = new GlobalCapabilities(this);
 
 		keyb = new KeyBindings(this);
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(keyb);
@@ -194,7 +185,7 @@ public class SessionManager extends JTabbedPane implements ClientWindowListener,
 		revalidate();
 
 		if (ClientState.getClientState().getString("user.nick", null) == null && !QuickConnect.IsQuickConnect()) {
-			getGlobalCapabilities().showOptionDialog(null);
+			Application.getInstance().getCapabilities().showPreferences(null);
 			session.getStatusWindow().getInput().requestFocus(); // give status window focus after first time setup...
 		}
 	}

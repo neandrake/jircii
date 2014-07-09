@@ -2,6 +2,7 @@ package rero.client.server;
 
 import java.util.HashMap;
 
+import jircii.app.Application;
 import rero.client.Feature;
 import rero.client.output.OutputCapabilities;
 import rero.config.ClientDefaults;
@@ -46,7 +47,7 @@ public class ProcessEvents extends Feature implements FrameworkConstants, ChatLi
 				touchUser(nick, target);
 
 				if (ClientState.getClientState().attentionEnabledChannelChat()) {
-					ClientUtils.getAttention(); // Get attention for channel chat
+					Application.getInstance().getCapabilities().requestAttention();
 				}
 			} else {
 				if (ClientState.getClientState().isOption("auto.query", ClientDefaults.auto_option)) {
@@ -56,7 +57,7 @@ public class ProcessEvents extends Feature implements FrameworkConstants, ChatLi
 				output.fireSetQuery(eventDescription, nick, target, "PRIVMSG");
 
 				if (ClientState.getClientState().attentionEnabledMsg()) {
-					ClientUtils.getAttention(); // Get attention for private message
+					Application.getInstance().getCapabilities().requestAttention();
 				}
 			}
 		} else if (event.equals("MODE")) {
@@ -75,18 +76,18 @@ public class ProcessEvents extends Feature implements FrameworkConstants, ChatLi
 				output.fireSetConfused(eventDescription, target, "notice", "NOTICE");
 
 				if (ClientState.getClientState().attentionEnabledChannelChat()) {
-					ClientUtils.getAttention(); // Get attention for channel notice
+					Application.getInstance().getCapabilities().requestAttention(); // Get attention for channel notice
 				}
 			} else if (ClientState.getClientState().isOption("active.notice", ClientDefaults.active_option)) {
 				output.fireSetConfused(eventDescription, target, "notice", "NOTICE");
 
 				if (ClientState.getClientState().attentionEnabledNotice()) {
-					ClientUtils.getAttention(); // Get attention for a private notice?
+					Application.getInstance().getCapabilities().requestAttention(); // Get attention for a private notice?
 				}
 			} else {
 				output.fireSetAllTarget2(eventDescription, nick, "NOTICE");
 				if (ClientState.getClientState().attentionEnabledNotice()) {
-					ClientUtils.getAttention(); // Get attention for a private notice?
+					Application.getInstance().getCapabilities().requestAttention(); // Get attention for a private notice?
 				}
 			}
 
@@ -96,7 +97,7 @@ public class ProcessEvents extends Feature implements FrameworkConstants, ChatLi
 				output.fireSetTarget(eventDescription, channel, output.chooseSet(channel, "ACTION", "ACTION_INACTIVE"));
 				touchUser(nick, target);
 				if (ClientState.getClientState().attentionEnabledChannelChat()) {
-					ClientUtils.getAttention(); // Get attention for channel action message
+					Application.getInstance().getCapabilities().requestAttention(); // Get attention for channel action message
 				}
 			} else {
 				if (ClientState.getClientState().isOption("auto.query", ClientDefaults.auto_option)) {
@@ -106,7 +107,7 @@ public class ProcessEvents extends Feature implements FrameworkConstants, ChatLi
 
 				output.fireSetTarget(eventDescription, nick, "PRIVACTION");
 				if (ClientState.getClientState().attentionEnabledMsg()) {
-					ClientUtils.getAttention(); // Get attention for private action message
+					Application.getInstance().getCapabilities().requestAttention(); // Get attention for private action message
 				}
 			}
 		} else if (event.equals("JOIN")) {
@@ -140,7 +141,7 @@ public class ProcessEvents extends Feature implements FrameworkConstants, ChatLi
 				output.cycleQuery();
 
 				if (ClientState.getClientState().attentionEnabledActions()) {
-					ClientUtils.getAttention(); // Get attention for KICK action
+					Application.getInstance().getCapabilities().requestAttention(); // Get attention for KICK action
 				}
 			}
 			output.fireSetTarget(eventDescription, channel, "CHANNEL_KICK");

@@ -15,10 +15,10 @@ import java.io.ObjectOutputStream;
 
 import javax.swing.UIManager;
 
+import jircii.app.Application;
 import rero.config.ClientDefaults;
 import rero.config.ClientState;
 import rero.config.ClientStateListener;
-import rero.gui.GlobalCapabilities;
 import rero.gui.SessionManager;
 
 public class TextSource {
@@ -167,10 +167,8 @@ public class TextSource {
 		@Override
 		public void propertyChanged(String value, String parms) {
 			rehashValue();
-			SessionManager.getGlobalCapabilities();
-			GlobalCapabilities.frame.validate();
-			SessionManager.getGlobalCapabilities();
-			GlobalCapabilities.frame.repaint();
+			Application.getInstance().getWindow().validate();
+			Application.getInstance().getWindow().repaint();
 		}
 	}
 

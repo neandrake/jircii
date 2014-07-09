@@ -2,13 +2,13 @@ package rero.gui.toolbar;
 
 import java.awt.event.MouseEvent;
 
-import rero.gui.SessionManager;
+import jircii.app.Application;
 import rero.gui.mdi.ClientDesktop;
 
 public class CascadeAction implements ToolAction {
 	@Override
 	public void actionPerformed(MouseEvent ev) {
-		((ClientDesktop) SessionManager.getGlobalCapabilities().getActiveSession().getDesktop()).cascadeWindows();
+		((ClientDesktop) Application.getInstance().getWindow().getSessionManager().getActiveSession().getDesktop()).cascadeWindows();
 	}
 
 	@Override

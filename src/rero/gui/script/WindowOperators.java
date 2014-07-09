@@ -10,8 +10,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 
+import jircii.app.Application;
 import rero.gui.IRCSession;
-import rero.gui.SessionManager;
 import rero.gui.windows.ChannelWindow;
 import rero.ircfw.User;
 import rero.util.ClientUtils;
@@ -176,7 +176,7 @@ public class WindowOperators implements Predicate, Function, Loadable {
 
 			return SleepUtils.getEmptyScalar();
 		} else if (function.equals("&getWindowTitle") && locals.size() == 0) {
-			return SleepUtils.getScalar(SessionManager.getGlobalCapabilities().getFrame().getTitle());
+			return SleepUtils.getScalar(Application.getInstance().getWindow().getTitle());
 		} else if (function.equals("&getWindowPrompt") && locals.size() == 1) {
 			String window = locals.pop().toString();
 
@@ -285,7 +285,7 @@ public class WindowOperators implements Predicate, Function, Loadable {
 			if (window.length() > 0 && session.getWindow(window) != null) {
 				session.getWindow(window).setTitle(text);
 			} else {
-				SessionManager.getGlobalCapabilities().getFrame().setTitle(text);
+				Application.getInstance().getWindow().setTitle(text);
 			}
 		} else if (function.equals("&setWindowPrompt")) {
 			if (session.getWindow(window) != null) {

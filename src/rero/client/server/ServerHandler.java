@@ -3,6 +3,7 @@ package rero.client.server;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import jircii.app.Application;
 import rero.client.Feature;
 import rero.client.notify.NotifyData;
 import rero.config.ClientDefaults;
@@ -166,7 +167,7 @@ public class ServerHandler extends Feature implements FrameworkConstants, Socket
 			getCapabilities().getOutputCapabilities().fireSetAll(ClientUtils.getEventHashMap(ev.data.hostname, ev.message), "IRC_DISCONNECT");
 
 			if (ClientState.getClientState().attentionEnabledActions()) {
-				ClientUtils.getAttention(); // Get attention for disconnect
+				Application.getInstance().getCapabilities().requestAttention();
 			}
 
 			if (data.getMyUser().getChannels().size() > 0) {
@@ -177,7 +178,7 @@ public class ServerHandler extends Feature implements FrameworkConstants, Socket
 					restoreServer = ev.data.hostname;
 
 					getCapabilities().getOutputCapabilities().fireSetAll(ClientUtils.getEventHashMap(ev.data.hostname, ev.message), "IRC_RECONNECT");
-					getCapabilities().getGlobalCapabilities().setTabTitle(getCapabilities(), "reconnecting");
+					Application.getInstance().getWindow().getSessionManager().setTabTitle(getCapabilities(), "reconnecting");
 					socket.connect(ev.data.hostname, ev.data.port, ClientState.getClientState().getInteger("reconnect.time", ClientDefaults.reconnect_time) * 1000, ev.data.password, ev.data.isSecure);
 
 					isDone = true;
@@ -190,7 +191,7 @@ public class ServerHandler extends Feature implements FrameworkConstants, Socket
 
 			if (restoreInformation != null && !isDone) {
 				getCapabilities().getOutputCapabilities().fireSetStatus(ClientUtils.getEventHashMap(ev.data.hostname, ev.message), "IRC_RECONNECT");
-				getCapabilities().getGlobalCapabilities().setTabTitle(getCapabilities(), "reconnecting");
+				Application.getInstance().getWindow().getSessionManager().setTabTitle(getCapabilities(), "reconnecting");
 				socket.connect(ev.data.hostname, ev.data.port, ClientState.getClientState().getInteger("reconnect.time", ClientDefaults.reconnect_time) * 1000, ev.data.password, ev.data.isSecure);
 			}
 		}

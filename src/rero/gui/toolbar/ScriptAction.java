@@ -2,12 +2,12 @@ package rero.gui.toolbar;
 
 import java.awt.event.MouseEvent;
 
-import rero.gui.SessionManager;
+import jircii.app.Application;
 
 public class ScriptAction implements ToolAction {
 	@Override
 	public void actionPerformed(MouseEvent ev) {
-		SessionManager.getGlobalCapabilities().showOptionDialog("Script Manager");
+		Application.getInstance().getCapabilities().showPreferences("Script Manager");
 	}
 
 	@Override

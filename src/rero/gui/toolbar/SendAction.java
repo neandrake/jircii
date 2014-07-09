@@ -4,18 +4,14 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JOptionPane;
 
-import rero.client.Capabilities;
-import rero.gui.SessionManager;
+import jircii.app.Application;
 
 public class SendAction implements ToolAction {
 	@Override
 	public void actionPerformed(MouseEvent ev) {
-		Capabilities client = SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities();
-
-		String nick = JOptionPane.showInputDialog(SessionManager.getGlobalCapabilities().getFrame(), "Send a file to:", "DCC Send", JOptionPane.QUESTION_MESSAGE);
-
+		String nick = JOptionPane.showInputDialog(Application.getInstance().getWindow(), "Send a file to:", "DCC Send", JOptionPane.QUESTION_MESSAGE);
 		if (nick != null) {
-			SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/DCC send " + nick);
+			Application.getInstance().getWindow().getSessionManager().getActiveSession().executeCommand("/DCC send " + nick);
 		}
 	}
 

@@ -2,12 +2,12 @@ package rero.gui.toolbar;
 
 import java.awt.event.MouseEvent;
 
-import rero.gui.SessionManager;
+import jircii.app.Application;
 
 public class DCCAction implements ToolAction {
 	@Override
 	public void actionPerformed(MouseEvent ev) {
-		SessionManager.getGlobalCapabilities().showOptionDialog("DCC Options");
+		Application.getInstance().getCapabilities().showPreferences("DCC Options");
 	}
 
 	@Override

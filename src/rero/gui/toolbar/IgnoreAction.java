@@ -2,12 +2,12 @@ package rero.gui.toolbar;
 
 import java.awt.event.MouseEvent;
 
-import rero.gui.SessionManager;
+import jircii.app.Application;
 
 public class IgnoreAction implements ToolAction {
 	@Override
 	public void actionPerformed(MouseEvent ev) {
-		SessionManager.getGlobalCapabilities().showOptionDialog("Ignore Setup");
+		Application.getInstance().getCapabilities().showPreferences("Ignore Setup");
 	}
 
 	@Override

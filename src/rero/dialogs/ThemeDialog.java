@@ -9,10 +9,10 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import jircii.app.Application;
 import rero.config.ClientDefaults;
 import rero.config.ClientState;
 import rero.dck.DMain;
-import rero.gui.SessionManager;
 import rero.util.ClientUtils;
 
 public class ThemeDialog extends DMain implements ActionListener {
@@ -36,7 +36,7 @@ public class ThemeDialog extends DMain implements ActionListener {
 		if (ev.getSource() == importt) {
 			file = DialogUtilities.showFileDialog("Import Theme File", null, null);
 			if (file != null) {
-				SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/theme " + file.getAbsolutePath());
+				Application.getInstance().getWindow().getSessionManager().getActiveSession().executeCommand("/theme " + file.getAbsolutePath());
 			}
 		} else if (ev.getSource() == exportt) {
 			String name = ClientUtils.generateThemeScript(null);

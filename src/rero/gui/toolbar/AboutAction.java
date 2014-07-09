@@ -2,16 +2,12 @@ package rero.gui.toolbar;
 
 import java.awt.event.MouseEvent;
 
-import rero.gui.SessionManager;
+import jircii.app.Application;
 
 public class AboutAction implements ToolAction {
 	@Override
 	public void actionPerformed(MouseEvent ev) {
-		if (ev.isShiftDown() && ev.isControlDown()) {
-			SessionManager.getGlobalCapabilities().showCoolAbout();
-		} else {
-			SessionManager.getGlobalCapabilities().showAboutDialog();
-		}
+		Application.getInstance().getCapabilities().showAbout();
 	}
 
 	@Override

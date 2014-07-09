@@ -12,6 +12,7 @@ import java.util.Stack;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import jircii.app.Application;
 import rero.client.Feature;
 import rero.config.ClientDefaults;
 import rero.config.ClientState;
@@ -381,7 +382,7 @@ public class UtilOperators extends Feature implements Loadable {
 
 		@Override
 		public Scalar evaluate(String f, ScriptInstance si, Stack locals) {
-			getCapabilities().getGlobalCapabilities().QuitClient();
+			Application.getInstance().getCapabilities().quit(null);
 			return null;
 		}
 	}
@@ -406,7 +407,7 @@ public class UtilOperators extends Feature implements Loadable {
 				title = locals.pop().toString();
 			}
 
-			String a = JOptionPane.showInputDialog(getCapabilities().getGlobalCapabilities().getFrame(), message, title, JOptionPane.QUESTION_MESSAGE);
+			String a = JOptionPane.showInputDialog(Application.getInstance().getWindow(), message, title, JOptionPane.QUESTION_MESSAGE);
 
 			if (a == null) {
 				return SleepUtils.getEmptyScalar();
@@ -452,7 +453,7 @@ public class UtilOperators extends Feature implements Loadable {
 				chooser.setApproveButtonText(locals.pop().toString());
 			}
 
-			int returnVal = chooser.showOpenDialog(getCapabilities().getGlobalCapabilities().getFrame());
+			int returnVal = chooser.showOpenDialog(Application.getInstance().getWindow());
 
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				return SleepUtils.getScalar(chooser.getSelectedFile().getAbsolutePath());

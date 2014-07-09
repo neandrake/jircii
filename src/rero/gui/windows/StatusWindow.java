@@ -15,6 +15,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
+import jircii.app.Application;
 import rero.bridges.menu.MenuBridge;
 import rero.client.Capabilities;
 import rero.config.ClientState;
@@ -251,7 +252,7 @@ public class StatusWindow extends BackgroundPanel implements IRCAwareComponent, 
 					int onmask = InputEvent.SHIFT_DOWN_MASK | InputEvent.BUTTON1_DOWN_MASK;
 					if ((ev.getModifiersEx() & onmask) == onmask) {
 						String text = ((JToggleButton) ev.getSource()).getText();
-						IRCSession session = capabilities.getGlobalCapabilities().getSessionManager().getActiveSession();
+						IRCSession session = Application.getInstance().getWindow().getSessionManager().getActiveSession();
 						session.getWindow(text).getWindow().closeWindow();
 					} else {
 						maybeShowPopup(ev, "switchbar");

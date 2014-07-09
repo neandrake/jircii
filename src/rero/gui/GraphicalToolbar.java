@@ -16,6 +16,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
 
+import jircii.app.Application;
 import rero.config.ClientDefaults;
 import rero.config.ClientState;
 import rero.config.ClientStateListener;
@@ -76,7 +77,7 @@ public class GraphicalToolbar extends JToolBar {
 		@Override
 		public void propertyChanged(String property, String parameter) {
 			if (toolbar != null) {
-				SessionManager.getGlobalCapabilities().getFrame().getContentPane().remove(toolbar);
+				Application.getInstance().getWindow().getContentPane().remove(toolbar);
 			}
 
 			if (ClientState.getClientState().isOption("ui.usetoolbar", ClientDefaults.ui_usetoolbar)) {
@@ -84,11 +85,11 @@ public class GraphicalToolbar extends JToolBar {
 					toolbar = new GraphicalToolbar();
 				}
 
-				SessionManager.getGlobalCapabilities().getFrame().getContentPane().add(toolbar, BorderLayout.NORTH);
+				Application.getInstance().getWindow().getContentPane().add(toolbar, BorderLayout.NORTH);
 			}
 
 			if (toolbar != null) {
-				SessionManager.getGlobalCapabilities().getFrame().getContentPane().validate();
+				Application.getInstance().getWindow().getContentPane().validate();
 			}
 		}
 	}

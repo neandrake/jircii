@@ -5,8 +5,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JMenuItem;
 
+import jircii.app.Application;
 import rero.client.user.UserHandler;
-import rero.gui.SessionManager;
 import sleep.runtime.ScriptInstance;
 
 public class SimpleItem extends JMenuItem implements ActionListener {
@@ -37,6 +37,6 @@ public class SimpleItem extends JMenuItem implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		((UserHandler) SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities().getDataStructure("commands")).processCommand(code);
+		((UserHandler) Application.getInstance().getWindow().getSessionManager().getActiveSession().getCapabilities().getDataStructure("commands")).processCommand(code);
 	}
 }

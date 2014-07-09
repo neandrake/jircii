@@ -3,6 +3,7 @@ package rero.gui.script;
 import java.util.LinkedList;
 import java.util.Stack;
 
+import jircii.app.Application;
 import rero.config.ClientState;
 import rero.gui.IRCSession;
 import rero.gui.windows.ScriptedListDialog;
@@ -90,11 +91,11 @@ public class UIOperators implements Function, Loadable {
 		if (function.equals("&refreshMenubar")) {
 			ClientState.getClientState().fireChange("loaded.scripts", null);
 		} else if (function.equals("&showOptionDialog")) {
-			session.getCapabilities().getGlobalCapabilities().showOptionDialog(BridgeUtilities.getString(locals, ""));
+			Application.getInstance().getCapabilities().showPreferences(BridgeUtilities.getString(locals, ""));
 		} else if (function.equals("&showHelpDialog")) {
-			session.getCapabilities().getGlobalCapabilities().showHelpDialog(BridgeUtilities.getString(locals, ""));
+			Application.getInstance().getCapabilities().showHelp(BridgeUtilities.getString(locals, ""));
 		} else if (function.equals("&showAboutDialog")) {
-			session.getCapabilities().getGlobalCapabilities().showAboutDialog();
+			Application.getInstance().getCapabilities().showAbout();
 		} else if (function.equals("&showSearchDialog")) {
 			session.getCapabilities().getUserInterface().showSearchDialog(BridgeUtilities.getString(locals, "%STATUS%"));
 		}

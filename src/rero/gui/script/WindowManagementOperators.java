@@ -8,8 +8,8 @@ import java.util.Stack;
 
 import javax.swing.JFrame;
 
+import jircii.app.Application;
 import rero.gui.IRCSession;
-import rero.gui.SessionManager;
 import rero.gui.mdi.ClientDesktop;
 import rero.gui.windows.StatusWindow;
 import rero.ircfw.InternalDataList;
@@ -79,7 +79,7 @@ public class WindowManagementOperators implements Function, Loadable {
 		} else if (function.equals("&setWindowState") && locals.size() == 1) {
 			String state = locals.pop().toString().toUpperCase();
 
-			JFrame window = SessionManager.getGlobalCapabilities().getFrame();
+			JFrame window = Application.getInstance().getWindow();
 
 			if (state.equals("NORMAL")) {
 				window.setExtendedState(Frame.NORMAL);
@@ -89,7 +89,7 @@ public class WindowManagementOperators implements Function, Loadable {
 				window.setExtendedState(Frame.ICONIFIED);
 			}
 		} else if (function.equals("&getWindowState") && locals.size() == 0) {
-			JFrame window = SessionManager.getGlobalCapabilities().getFrame();
+			JFrame window = Application.getInstance().getWindow();
 			int state = window.getExtendedState();
 
 			if ((state & Frame.ICONIFIED) == Frame.ICONIFIED) {

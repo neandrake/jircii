@@ -29,8 +29,6 @@ import rero.client.server.ProcessEvents;
 import rero.client.server.ServerHandler;
 import rero.client.user.ClientCommand;
 import rero.client.user.UserHandler; // import features
-import rero.gui.GlobalCapabilities;
-import rero.gui.SessionManager;
 import rero.gui.UICapabilities;
 import rero.ircfw.ChatFramework;
 import rero.ircfw.interfaces.ChatListener;
@@ -239,9 +237,5 @@ public class Capabilities {
 			Feature temp = (Feature) i.next();
 			temp.init();
 		}
-	}
-
-	public GlobalCapabilities getGlobalCapabilities() {
-		return SessionManager.getGlobalCapabilities();
 	}
 }

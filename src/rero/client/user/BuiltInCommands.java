@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import jircii.app.Application;
 import rero.client.DataStructures;
 import rero.client.Feature;
 import rero.client.notify.NotifyData;
@@ -206,7 +207,7 @@ public class BuiltInCommands extends Feature implements ClientCommand {
 			break;
 		case CTCP:
 			if (tokens.getToken(1).equals("KOW1")) {
-				getCapabilities().getGlobalCapabilities().showCoolAbout();
+				Application.getInstance().getCapabilities().showAbout();
 				return;
 			}
 
@@ -290,10 +291,10 @@ public class BuiltInCommands extends Feature implements ClientCommand {
 			((ScriptManager) getCapabilities().getDataStructure(DataStructures.ScriptManager)).evalScript(parms);
 			break;
 		case EXIT:
-			getCapabilities().getGlobalCapabilities().QuitClient();
+			Application.getInstance().getCapabilities().quit(null);
 			break;
 		case HELP:
-			getCapabilities().getGlobalCapabilities().showHelpDialog(parms);
+			Application.getInstance().getCapabilities().showHelp(parms);
 			break;
 		case HO:
 		case HALFOP: {
@@ -503,10 +504,11 @@ public class BuiltInCommands extends Feature implements ClientCommand {
 			}
 			break;
 		case NEWSERVER:
-			getCapabilities().getGlobalCapabilities().createNewServer();
+			SessionManager sm = Application.getInstance().getWindow().getSessionManager();
+			sm.addSession();
 
 			if (parms.length() > 0) {
-				SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/server " + parms);
+				sm.getActiveSession().executeCommand("/server " + parms);
 			}
 
 			break;

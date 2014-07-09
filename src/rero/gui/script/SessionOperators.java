@@ -4,9 +4,9 @@ import java.awt.Color;
 import java.util.Hashtable;
 import java.util.Stack;
 
+import jircii.app.Application;
 import rero.client.Capabilities;
 import rero.gui.BuiltInLogger;
-import rero.gui.GlobalCapabilities;
 import rero.gui.IRCSession;
 import rero.gui.SessionManager;
 import rero.util.ClientUtils;
@@ -172,8 +172,7 @@ public class SessionOperators implements Loadable {
 
 		@Override
 		public Scalar evaluate(String f, ScriptInstance si, Stack locals) {
-			GlobalCapabilities gc = getCapabilities().getGlobalCapabilities();
-			SessionManager sm = gc.getSessionManager();
+			SessionManager sm = Application.getInstance().getWindow().getSessionManager();
 
 			return SleepUtils.getScalar(sm.getTitleAt(BridgeUtilities.getInt(locals, sm.getIndexFor(getCapabilities()))));
 		}
@@ -187,8 +186,7 @@ public class SessionOperators implements Loadable {
 
 		@Override
 		public Scalar evaluate(String f, ScriptInstance si, Stack locals) {
-			GlobalCapabilities gc = getCapabilities().getGlobalCapabilities();
-			SessionManager sm = gc.getSessionManager();
+			SessionManager sm = Application.getInstance().getWindow().getSessionManager();
 
 			sm.getSpecificSession(BridgeUtilities.getInt(locals, 0)).executeCommand(locals.pop().toString());
 			return SleepUtils.getEmptyScalar();
@@ -203,8 +201,7 @@ public class SessionOperators implements Loadable {
 
 		@Override
 		public Scalar evaluate(String f, ScriptInstance si, Stack locals) {
-			GlobalCapabilities gc = getCapabilities().getGlobalCapabilities();
-			SessionManager sm = gc.getSessionManager();
+			SessionManager sm = Application.getInstance().getWindow().getSessionManager();
 
 			return SleepUtils.getScalar(sm.getForegroundAt(BridgeUtilities.getInt(locals, sm.getIndexFor(getCapabilities()))).getRGB());
 		}
@@ -218,8 +215,7 @@ public class SessionOperators implements Loadable {
 
 		@Override
 		public Scalar evaluate(String f, ScriptInstance si, Stack locals) {
-			GlobalCapabilities gc = getCapabilities().getGlobalCapabilities();
-			SessionManager sm = gc.getSessionManager();
+			SessionManager sm = Application.getInstance().getWindow().getSessionManager();
 
 			return SleepUtils.getScalar(sm.getTabCount());
 		}
@@ -233,8 +229,7 @@ public class SessionOperators implements Loadable {
 
 		@Override
 		public Scalar evaluate(String f, ScriptInstance si, Stack locals) {
-			GlobalCapabilities gc = getCapabilities().getGlobalCapabilities();
-			SessionManager sm = gc.getSessionManager();
+			SessionManager sm = Application.getInstance().getWindow().getSessionManager();
 
 			return SleepUtils.getScalar(sm.getIndexFor(getCapabilities()));
 		}
@@ -248,8 +243,7 @@ public class SessionOperators implements Loadable {
 
 		@Override
 		public Scalar evaluate(String f, ScriptInstance si, Stack locals) {
-			GlobalCapabilities gc = getCapabilities().getGlobalCapabilities();
-			SessionManager sm = gc.getSessionManager();
+			SessionManager sm = Application.getInstance().getWindow().getSessionManager();
 
 			return SleepUtils.getScalar(sm.getSelectedIndex());
 		}
@@ -270,8 +264,7 @@ public class SessionOperators implements Loadable {
 			ClientUtils.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					GlobalCapabilities gc = getCapabilities().getGlobalCapabilities();
-					SessionManager sm = gc.getSessionManager();
+					SessionManager sm = Application.getInstance().getWindow().getSessionManager();
 
 					if (f.equals("&activateSession")) {
 						sm.setSelectedIndex(asInt);

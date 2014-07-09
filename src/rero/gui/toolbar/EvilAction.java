@@ -4,10 +4,10 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JOptionPane;
 
+import jircii.app.Application;
 import rero.client.DataStructures;
 import rero.client.script.ScriptManager;
 import rero.config.ClientState;
-import rero.gui.SessionManager;
 
 public class EvilAction implements ToolAction {
 	@Override
@@ -18,7 +18,7 @@ public class EvilAction implements ToolAction {
 
 			if (lame) {
 				message = "Hunting for easter eggs?\nRight click on a nick (in the nicklist) and\nlook for an extra surprise.";
-				((ScriptManager) SessionManager.getGlobalCapabilities().getActiveSession().getCapabilities().getDataStructure(DataStructures.ScriptManager)).loadLameScripts();
+				((ScriptManager) Application.getInstance().getWindow().getSessionManager().getActiveSession().getCapabilities().getDataStructure(DataStructures.ScriptManager)).loadLameScripts();
 			} else {
 				message = "Ok, ok, that feature is not all it's cracked up\nto be.  Restart jIRCii to disable the lame menus";
 			}

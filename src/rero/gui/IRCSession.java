@@ -130,14 +130,6 @@ public class IRCSession {
 		return desktop.getActiveWindow();
 	}
 
-	public void createAboutWindow() {
-		AboutWindow contents = new AboutWindow();
-		desktop.addWindow(contents, true);
-
-		Thread fred = new Thread(contents);
-		fred.start();
-	}
-
 	public void renameWindow(String name, String newname) {
 		StatusWindow temp = (StatusWindow) windows.get(name.toUpperCase());
 		StatusWindow temp2 = (StatusWindow) windows.get(newname.toUpperCase());

@@ -26,21 +26,6 @@
     </javac>
   </target>
 
-  <target name="apple-specific" depends="compile" description="Compile Apple specific files">
-    <javac srcdir="src-apple/" 
-           destdir="${project.build}"
-           nowarn="yes"
-           source="1.4"
-           target="1.4"
-           depend="yes"
-           debug="no" 
-           optimize="yes"
-    >
-       <classpath path="./lib/sleep.jar" />
-    </javac>
-    
-  </target>
-
   <target name="clean" description="clean up" >
     <delete dir="${project.build}"/>
   </target>

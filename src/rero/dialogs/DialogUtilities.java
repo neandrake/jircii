@@ -4,7 +4,7 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 
-import rero.gui.SessionManager;
+import jircii.app.Application;
 
 public class DialogUtilities {
 	private static JFileChooser chooser = null;
@@ -26,7 +26,7 @@ public class DialogUtilities {
 			chooser.setApproveButtonText(acceptButton);
 		}
 
-		int returnVal = chooser.showOpenDialog(SessionManager.getGlobalCapabilities().getFrame());
+		int returnVal = chooser.showOpenDialog(Application.getInstance().getWindow());
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			return chooser.getSelectedFile();

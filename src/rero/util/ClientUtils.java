@@ -12,7 +12,6 @@ import java.awt.Font;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Method; // For attention getting routines (we have to call indirectly)
 import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
@@ -30,6 +29,7 @@ import rero.config.ClientState;
 import rero.dialogs.DialogUtilities;
 import text.AttributedString;
 import text.TextSource;
+// For attention getting routines (we have to call indirectly)
 
 public class ClientUtils {
 	public static void invokeLater(Runnable doIt) {
@@ -618,58 +618,5 @@ public class ClientUtils {
 		rv.add(pfile);
 
 		return rv;
-	}
-
-	// Return operating system; OS X (0), Windows (1) or Linux (2)
-	public static int GetOS() {
-		String OS = System.getProperty("os.name").toLowerCase();
-
-		if (OS.indexOf("mac") >= 0) {
-			return 0;
-		} else if (OS.indexOf("win") >= 0) {
-			return 1;
-		} else if (OS.indexOf("linux") >= 0) {
-			return 2;
-		}
-
-		return -1;
-
-	}
-
-	// Returns the operating system
-	public static boolean isWindows() {
-		return (GetOS() == 1);
-	}
-
-	public static boolean isLinux() {
-		return (GetOS() == 2);
-	}
-
-	public static boolean isMac() {
-		return (GetOS() == 0);
-	}
-
-	// Notify user of activity in status bar, dock, task bar, whatever
-	public static void getAttention() {
-		if (isMac()) {
-			// OS X: We bounce the dock icon up and down.
-			try {
-				Class osxAdapter = Class.forName("apple.OSXAdapter");
-				Class[] defArgs = new Class[] { boolean.class }; // We're going to be passing one argument to the method
-				Method gaMethod = osxAdapter.getDeclaredMethod("getAttention", defArgs);
-				if (gaMethod != null) {
-					Boolean blnObj = new Boolean(ClientState.getClientState().isOption("option.attention.osx.bouncedock.repeat", ClientDefaults.attention_osx_bouncedock_repeat));
-					gaMethod.invoke(osxAdapter, new Object[] { blnObj }); // apple.OSXAdapter.getAttention(boolean)
-																			// equivalent; what a bitch to code this.
-				}
-			} catch (Exception ex) {
-				System.err.println("Exception while trying to call OSXAdapter.getAttention() (indirectly): ");
-				ex.printStackTrace();
-			}
-		} else if (isWindows()) {
-			return;
-		} else if (isLinux()) {
-			return;
-		}
 	}
 }

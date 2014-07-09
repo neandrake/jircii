@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import rero.gui.SessionManager;
+import jircii.app.Application;
 import rero.gui.toolkit.GeneralListModel;
 import rero.ircfw.interfaces.ChatListener;
 import rero.ircfw.interfaces.FrameworkConstants;
@@ -50,7 +50,7 @@ public class ChannelListDialog extends GeneralListDialog implements ActionListen
 	@Override
 	public void processMouseEvent(MouseEvent ev, int row) {
 		ChannelTableModel temp = (ChannelTableModel) model;
-		SessionManager.getGlobalCapabilities().getActiveSession().executeCommand("/JOIN " + ((LChannel) temp.getData().get(row)).getChannel());
+		Application.getInstance().getWindow().getSessionManager().getActiveSession().executeCommand("/JOIN " + ((LChannel) temp.getData().get(row)).getChannel());
 	}
 
 	public ChannelListDialog() {

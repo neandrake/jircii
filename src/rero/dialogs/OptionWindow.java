@@ -25,6 +25,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import jircii.app.Application;
 import rero.config.ClientState;
 import rero.dck.DCapabilities;
 import rero.dck.DMain;
@@ -154,7 +155,7 @@ public class OptionWindow extends JDialog implements DCapabilities, TreeSelectio
 		category.add(option);
 
 		// For the time being, enable this only if we're in OS X, since attention code doesn't work on Windows or Linux.
-		if (ClientUtils.isMac()) {
+		if (Application.getInstance().getNativeSystem().isMac()) {
 			option = new DefaultMutableTreeNode(addDialog(new AttentionDialog()));
 		}
 		category.add(option);

@@ -1,5 +1,6 @@
 package rero.dcc;
 
+import jircii.app.Application;
 import rero.client.Capabilities;
 import rero.config.ClientDefaults;
 import rero.config.ClientState;
@@ -32,9 +33,7 @@ public class DCCUtilities {
 
 		switch (selectedOption) {
 		case ASK_RESUME_OPTION_SET:
-			resumeOption = ResumeRequest.showDialog(c.getGlobalCapabilities().getFrame(), connect); // lets user choose a
-																									// full range of resume
-																									// options :)
+			resumeOption = ResumeRequest.showDialog(Application.getInstance().getWindow(), connect); // lets user choose a full range of resume options :)
 			break;
 		case OVERWRITE_RESUME_OPTION_SET:
 			resumeOption = OVERWRITE_OPTION_SELECTED;
