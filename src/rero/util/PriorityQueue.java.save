@@ -1,8 +1,0 @@
-package rero.util;
-
-import java.util.LinkedList
-
-public class PriorityQueue
-{
-    
-}
